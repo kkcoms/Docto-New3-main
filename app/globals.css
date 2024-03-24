@@ -1,0 +1,405 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+:root {
+  height: 100%;
+}
+
+
+
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 181.2 72.9% 40.6%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 181.2 72.9% 40.6%;
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 182.0 71.3% 41.0%;
+    --primary-foreground: 181.7 38.3% 63.1%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 180.7 72.6% 22.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 182.0 69.7% 41.4%;
+  }
+}
+
+
+
+/* @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+} */
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-smooth-pulse {
+  animation: pulse 1.5s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+.animate-smooth-gentlePulse {
+  animation: gentlePulse 1.5s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .hero-header {
+    vertical-align: top;
+    transform-origin: center top;
+    transform: translateZ(-1px) scale(2);
+  }
+
+  .page {
+    position: relative;
+    height: 150vh;
+    max-height: 100%;
+    overflow: hidden;
+    perspective: 1px;
+    perspective-origin: center top;
+    transform-style: preserve-3d;
+  }
+
+  .page-content {
+    overflow: auto;
+    height: calc(100% - 140px);
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .audio-wrapper {
+    bottom: 52px;
+  }
+
+  .body {
+    background: white;
+    transform: translateZ(0);
+    padding: 60px 40px;
+  }
+
+  .dark .body {
+    background: #1F1F1F;
+  }
+
+  .TabsRoot {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .TabsList {
+    flex-shrink: 0;
+    display: flex;
+  }
+
+  .react-tabs__tab-list2 {
+    border-bottom: 1px solid #e4e4e7;
+    margin: 0 0 10px;
+    padding: 0;
+  }
+  
+
+  
+
+  .TabsTrigger {
+    height: 45px;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .TabsTrigger:first-child {
+    border-top-left-radius: 6px;
+  }
+
+  .TabsTrigger:last-child {
+    border-top-right-radius: 6px;
+  }
+
+  .TabsTrigger[data-state="active"],
+  .TabsTrigger[aria-selected="true"] {
+    color: black;
+    border-bottom: 3px solid #3fb0b4;
+  }
+
+  .dark .TabsTrigger[data-state="active"],
+  .dark .TabsTrigger[aria-selected="true"] {
+    color: white;
+    border-bottom: 3px solid white;
+  }
+
+  .TabsTrigger::after {
+    background: transparent !important;
+  }
+
+  .TabsContent {
+    flex-grow: 1;
+    background-color: transparent;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    outline: none;
+  }
+
+  .CheckboxRoot {
+    background-color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px var(--black-a7);
+  }
+
+  .dark .CheckboxRoot {
+    background-color: #1F1F1F;
+  }
+
+  .CheckboxRoot:hover {
+    background-color: var(--violet-3);
+  }
+
+  .CheckboxRoot:focus {
+    box-shadow: 0 0 0 2px black;
+  }
+
+  .dark .CheckboxRoot:focus {
+    box-shadow: 0 0 0 2px white;
+  }
+
+  .CheckboxIndicator {
+    color: var(--violet-11);
+  }
+
+  .dark .CheckboxIndicator {
+    color: white;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+.BtnMic {
+  top: calc(100vh - 100px);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+}
+
+.shadow-right {
+  box-shadow: 4px 0 6px -1px rgb(0 0 0 / 0.1), 2px 0 4px -2px rgb(0 0 0 / 0.1);
+}
+
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #09a7ac6c;
+  border-radius: 1px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #ffffff28;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* .record-button {
+  position: relative;
+  left: 0%;
+} */
+.rhap_container {
+  background: #f7f7f9; /* Keeping this as per your container's color */
+}
+
+.rhap_controls-section {
+  margin-bottom: 15px;
+}
+
+.mantine-y68mcm .ProseMirror {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  color: #3F3F3F;
+  font-family: "Raleway" !important;
+}
+
+/* It looks like you've defined the .rhap_main-controls-button size twice, so I'll combine them */
+.rhap_main-controls-button {
+  width: 56px; /* If this is your desired size, otherwise change it */
+  height: 56px;
+  display: block;
+}
+
+.rhap_main-controls-button svg {
+  color: #8DD2D4; /* Primary brand color for icons */
+  width: 100%;
+  height: 100%;
+}
+
+/* Update progress bar colors to use the primary brand color */
+.rhap_progress-filled,
+.rhap_progress-indicator {
+  background-color: #8DD2D4 !important; /* Primary brand color */
+}
+
+/* Volume button color set to primary brand color without a background color */
+.rhap_button-clear.rhap_volume-button {
+  color: #8DD2D4 !important; /* Primary brand color for volume button */
+}
+
+/* Volume bar and indicator color set to primary brand color */
+.rhap_volume-bar, 
+.rhap_volume-indicator {
+  background-color: #8DD2D4; /* Primary brand color for volume bar */
+}
+
+
+/* darkModeAudioPlayer.css */
+
+.dark .rhap_container {
+  background-color: #1f1f1f;
+  color: #fff;
+}
+
+.dark .rhap_play-pause-button {
+  color: #fff;
+}
+
+.dark .rhap_volume-bar,
+.dark .rhap_progress-bar {
+  background-color: #555;
+}
+
+.dark .rhap_volume-indicator,
+.dark .rhap_progress-indicator {
+  background-color: #fff;
+}
+
+.dark .rhap_time {
+  color: #ccc;
+}
