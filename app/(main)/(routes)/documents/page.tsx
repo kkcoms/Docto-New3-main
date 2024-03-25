@@ -10,18 +10,22 @@ import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
+import {useContext} from "react";
+import {INotesContext, NotesContext} from "@/context/context";
 
 const DocumentsPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const create = useMutation(api.documents.create);
+  const { setCurrentNote } = useContext(NotesContext) as INotesContext
 
   const onCreate = () => {
     const promise = create({
       title: "New Clinical Note",
-    } as { parentDocument?: Id<"documents"> | undefined; title: string }) // Update the type definition of the create mutation
-
-      .then((documentId) => router.push(`/documents/${documentId}`))
+    } as { parentDocument?: Id<"documents"> | undefined; title: string })
+      .then((documentId) => {
+        router.push(`/documents/${documentId}`)
+      })
 
     toast.promise(promise, {
       loading: "Creating a New Clinical Note...",
@@ -30,7 +34,7 @@ const DocumentsPage = () => {
     });
   };
 
-  return ( 
+  return (
     <div className="h-full flex flex-col items-center justify-center space-y-4">
       <Image
         src="/emptynote.svg"
@@ -56,5 +60,5 @@ const DocumentsPage = () => {
     </div>
    );
 }
- 
+
 export default DocumentsPage;

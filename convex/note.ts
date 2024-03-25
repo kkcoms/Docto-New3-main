@@ -228,7 +228,6 @@ export const updateTitleNote = mutation({
     args: { noteId: v.id("documents") },
     handler: async (ctx, args) => {
 
-      console.log("test")
       const identity = await ctx.auth.getUserIdentity();
 
       const document = await ctx.db.get(args.noteId);

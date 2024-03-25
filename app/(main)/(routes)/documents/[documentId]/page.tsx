@@ -38,7 +38,6 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -61,11 +60,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   } = useContext(TranscriptionContext);
 
   const { current } = useContext(NotesContext) as INotesContext
-
-  if (!current) {
-    router.push('/documents');
-    return null;
-  }
 
   const document = current
 
@@ -103,6 +97,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   }, [document]);
 
+  useEffect(() => {
+    if (!document)
+        router.push("/documents")
+  }, [])
   if (!document) {
     return (
       <div>
