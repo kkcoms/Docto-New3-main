@@ -1,5 +1,4 @@
 "use client";
-
 import {
   ChevronsLeft,
   Folder,
@@ -31,8 +30,6 @@ import { Item } from "./item";
 import { DocumentList } from "./document-list";
 import { TrashBox } from "./trash-box";
 import { Navbar } from "./navbar";
-import FolderList from "@/app/(notes)/_components/folder-list";
-import Private from "@/app/(notes)/_components/private";
 import Notes from "@/app/(notes)/_components/notes";
 
 export const useNavigation = () => {
@@ -194,14 +191,14 @@ export const useNavigation = () => {
         <div className="mt-4">
           {/* <Private /> */}
           <Notes />
-  
+
           <DocumentList />
           {/* <Item
             onClick={handleCreate}
             icon={Plus}
             label="Add a page"
           /> */}
-  
+
           <Popover>
             <PopoverTrigger className="w-full mt-4">
               <Item label="Trash" icon={Trash} />
@@ -222,7 +219,7 @@ export const useNavigation = () => {
       </aside>
     );
   }, [isMobile, isResetting, isCollapsed]);
-  
+
   const navbar = useMemo(() => {
     return (
       <div
@@ -251,7 +248,7 @@ export const useNavigation = () => {
       </div>
     );
   }, [isResetting, isMobile, isCollapsed]);
-  
+
   return [navigation, navbar];
 
 };

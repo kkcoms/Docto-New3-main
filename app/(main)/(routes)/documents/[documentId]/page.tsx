@@ -1,13 +1,11 @@
 // page.tsx
 "use client";
-
-// Make sure all import statements are at the top of the file
 import { useMutation, useQuery } from "convex/react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import Transcription from "@/app/(speech)/app/components/Transcription";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import {Doc, Id} from "@/convex/_generated/dataModel";
 import { Toolbar } from "@/components/toolbar";
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +20,7 @@ import 'react-h5-audio-player/lib/styles.css';
 import { useRouter } from 'next/navigation';
 import { CreateProjectKeyResponse, LiveClient, LiveTranscriptionEvents, createClient } from "@deepgram/sdk";
 import { PlateEditor } from "@/app/(main)/_components/summary-editor";
+import {INotesContext, NotesContext} from "@/context/context";
 
 const model = {
   model: "nova-2-medical",
@@ -39,21 +38,20 @@ interface DocumentIdPageProps {
 }
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
+
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-  const [apiKey, setApiKey] = useState<CreateProjectKeyResponse | null>();
-  const [connection, setConnection] = useState<LiveClient | null>();
 
-  const { 
+  const {
     isDisabledRecordButton,
-    audioFileUrl, 
-    setAudioFileUrl, 
-    setAudioCurrentTime, 
-    isTranscribed, 
-    setIsTranscribed, 
-    addFinalTranscription, 
+    audioFileUrl,
+    setAudioFileUrl,
+    setAudioCurrentTime,
+    isTranscribed,
+    setIsTranscribed,
+    addFinalTranscription,
     clearFinalTranscriptions,
     setLiveTranscription,
     setSummarizationResult,
@@ -62,9 +60,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     setSummaryNote
   } = useContext(TranscriptionContext);
 
-  const document = useQuery(api.documents.getById, {
-    documentId: params.documentId,
-  });
+  const { current } = useContext(NotesContext) as INotesContext
+
+  if (!current) {
+    router.push('/documents');
+    return null;
+  }
+
+  const document = current
 
   useEffect(() => {
     clearFinalTranscriptions();
@@ -77,8 +80,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   }, [params.documentId]);
 
   useEffect(() => {
-    if (document && document.content) {
-      console.log('document', document)
+    if (!document)
+      return
+
+    if (document.content){
       const content = JSON.parse(document.content);
       if (content && !isTranscribed) {
         content?.map(function(transcription: any, index: any) {
@@ -86,50 +91,19 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
           setIsTranscribed(true);
         })
       }
-      if (document.audioFileUrl) {
-        setAudioFileUrl(document.audioFileUrl);
-      }
-
-      setSummarizationResult(document.summarizationResult ? document.summarizationResult : "");
-
-      setSummaryNote(document.summaryNote ? document.summaryNote : "");
     }
+
+    if (document.audioFileUrl) {
+      setAudioFileUrl(document.audioFileUrl);
+    }
+
+    setSummarizationResult(document.summarizationResult ? document.summarizationResult : "");
+
+    setSummaryNote(document.summaryNote ? document.summaryNote : "");
+
   }, [document]);
 
-  // useEffect(() => {
-  //   // Initialize the Deepgram connection
-  //   const initializeDeepgramConnection = async () => {
-  //     try {
-  //       const apiKeyResponse = await fetch("/api/deepgram", { cache: "no-store" });
-  //       const apiKeyObject = await apiKeyResponse.json();
-
-  //       if (!("key" in apiKeyObject)) {
-  //         throw new Error("No API key returned");
-  //       }
-
-  //       setApiKey(apiKeyObject);
-
-  //       const deepgram = createClient(apiKeyObject.key);
-  //       const connection = deepgram.listen.live(model);
-
-  //       connection.on(LiveTranscriptionEvents.Open, () => {
-  //         console.log("Deepgram connection established");
-  //       });
-
-  //       connection.on(LiveTranscriptionEvents.Error, (error) => {
-  //         console.error("Deepgram connection error:", error);
-  //       });
-
-  //       setConnection(connection);
-  //     } catch (error) {
-  //       console.error("Error initializing Deepgram connection:", error);
-  //     }
-  //   };
-
-  //   initializeDeepgramConnection();
-  // }, []);
-
-  if (document === undefined) {
+  if (!document) {
     return (
       <div>
         <Cover.Skeleton />
@@ -143,11 +117,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
         </div>
       </div>
     );
-  }
-
-  if (document === null) {
-    router.push('/documents');
-    return null;
   }
 
   return (

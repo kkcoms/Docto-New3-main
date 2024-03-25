@@ -6,6 +6,7 @@ import { ConvexClientProvider } from '@/components/providers/convex-provider'
 import { ModalProvider } from "@/components/providers/modal-provider";
 import { EdgeStoreProvider } from "@/lib/edgestore";
 import { Raleway } from 'next/font/google'
+import ContextProvider from "@/context/context";
 
 const raleway = Raleway({
   weight: ['400', '700'], // Example: Regular and Bold
@@ -38,6 +39,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  console.log(children)
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={raleway.className}>
@@ -50,9 +52,11 @@ export default function RootLayout({
               disableTransitionOnChange
               storageKey="Docto-theme-2"
             >
-              <Toaster position="bottom-right" />
-              <ModalProvider />
-              {children}
+              <ContextProvider>
+                <Toaster position="bottom-right" />
+                <ModalProvider />
+                {children}
+              </ContextProvider>
             </ThemeProvider>
           </EdgeStoreProvider>
         </ConvexClientProvider>

@@ -17,7 +17,6 @@ const MainLayout = ({
   const { isAuthenticated, isLoading } = useConvexAuth();
   const [navigation, navbar] = useNavigation();
 
-
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -46,5 +45,5 @@ const MainLayout = ({
     </TranscriptionProvider>
    );
 }
- 
+
 export default MainLayout;

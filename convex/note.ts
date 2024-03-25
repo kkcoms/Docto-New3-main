@@ -9,23 +9,23 @@ import { mutationWithUser } from "./utils";
 
 export const create = mutation({
     args: {
-      title: v.string(),  
+      title: v.string(),
       folderId:v.optional(v.string())
     },
     handler: async (ctx, args) => {
       const identity = await ctx.auth.getUserIdentity();
-  
+
       if (!identity) {
         throw new Error("Not authenticated");
       }
-  
+
       const userId = identity.subject;
-  
+
       const document = await ctx.db.insert("documents", {
         title: args.title,
         userId,
         folderId: args.folderId,
-        isArchived: false,  
+        isArchived: false,
         isPublished: false,
       });
       return document;
@@ -44,7 +44,7 @@ export const create = mutation({
         if (!identity) {
             throw new Error("Not authenticated");
           }
-      
+
         const userId = identity.subject;
         const folderId = args.folderId;
 
@@ -74,13 +74,13 @@ export const deleteNote = mutation({
     },
     handler: async (ctx, args) => {
       const identity = await ctx.auth.getUserIdentity();
-  
+
       if (!identity) {
         throw new Error("Not authenticated");
       }
       const deletenote = await ctx.db.delete(args.noteId);
-  
-      return 
+
+      return
     }
   });
 
@@ -95,18 +95,18 @@ export const moveNote = mutation({
     },
     handler: async (ctx, args) => {
       const identity = await ctx.auth.getUserIdentity();
-  
+
       if (!identity) {
         throw new Error("Not authenticated");
       }
       const movenote = await ctx.db.patch(args.noteId, {folderId:args.folderId});
-  
-      return 
+
+      return
     }
   });
 
 
-// update note title 
+// update note title
 
 export const updateTitleNote = mutation({
     args: {
@@ -115,13 +115,13 @@ export const updateTitleNote = mutation({
     },
     handler: async (ctx, args) => {
       const identity = await ctx.auth.getUserIdentity();
-  
+
       if (!identity) {
         throw new Error("Not authenticated");
       }
       const movenote = await ctx.db.patch(args.noteId, {title:args.title});
-  
-      return 
+
+      return
     }
   });
 
@@ -140,9 +140,9 @@ export const updateTitleNote = mutation({
       return { success: true, fileUrl };
     },
   });
-  
-  
-  
+
+
+
   export const generateUploadUrl = mutationWithUser({
     args: {},
     handler: async (ctx) => {
@@ -163,60 +163,60 @@ export const updateTitleNote = mutation({
     },
     handler: async (ctx, args) => {
       const identity = await ctx.auth.getUserIdentity();
-  
+
       if (!identity) {
         throw new Error("Unauthenticated");
       }
-  
+
       const userId = identity.subject;
-  
+
       const { id, ...rest } = args;
-  
+
       const existingDocument = await ctx.db.get(args.id);
-  
+
       if (!existingDocument) {
         throw new Error("Not found");
       }
-  
+
       if (existingDocument.userId !== userId) {
         throw new Error("Unauthorized");
       }
-  
+
       const document = await ctx.db.patch(args.id, {
         ...rest,
       });
-  
+
       return document;
     },
   });
-  
+
 
   // remove Icon
   export const removeIcon = mutation({
     args: { id: v.id("documents") },
     handler: async (ctx, args) => {
       const identity = await ctx.auth.getUserIdentity();
-  
+
       if (!identity) {
         throw new Error("Unauthenticated");
       }
-  
+
       const userId = identity.subject;
-  
+
       const existingDocument = await ctx.db.get(args.id);
-  
+
       if (!existingDocument) {
         throw new Error("Not found");
       }
-  
+
       if (existingDocument.userId !== userId) {
         throw new Error("Unauthorized");
       }
-  
+
       const document = await ctx.db.patch(args.id, {
         icon: undefined
       });
-  
+
       return document;
     }
   });
@@ -227,28 +227,30 @@ export const updateTitleNote = mutation({
   export const getById = query({
     args: { noteId: v.id("documents") },
     handler: async (ctx, args) => {
+
+      console.log("test")
       const identity = await ctx.auth.getUserIdentity();
-  
+
       const document = await ctx.db.get(args.noteId);
-  
+
       if (!document) {
         throw new Error("Not found");
       }
-  
+
       if (document.isPublished && !document.isArchived) {
         return document;
       }
-  
+
       if (!identity) {
         throw new Error("Not authenticated");
       }
-  
+
       const userId = identity.subject;
-  
+
       if (document.userId !== userId) {
         throw new Error("Unauthorized");
       }
-  
+
       return document;
     }
   });
@@ -262,7 +264,7 @@ export const FolderNotes = query({
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
-    
+
         if (!identity) {
           throw new Error("Not authenticated");
         }
@@ -270,7 +272,7 @@ export const FolderNotes = query({
         .filter((q) => q.eq(q.field("folderId"), args.folderId))
         .filter((q) => q.eq(q.field("isArchived"), args.isArchived))
         .collect();
-        
+
         return notes
     }
 })

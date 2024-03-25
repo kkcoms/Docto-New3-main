@@ -1,5 +1,5 @@
 import { useQuery } from 'convex/react';
-import React, { useMemo, useCallback, useState } from 'react';
+import React, {useMemo, useCallback, useState, useContext, useEffect} from 'react';
 import { FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -7,9 +7,13 @@ import Options from './options';
 import { api } from '@/convex/_generated/api';
 import { Id } from "@/convex/_generated/dataModel";
 import { debounce } from 'lodash';
+import {INotesContext, NotesContext} from "@/context/context";
 
 const Notes = ({ folderId }: { folderId?: Id<"folder"> }) => {
-  const notes = useQuery(api.note.getNotesById, { folderId });
+
+  const { setCurrentNote } = useContext(NotesContext) as INotesContext
+
+  const _notes = useQuery(api.note.getNotesById, { folderId });
   const [showOption, setShowOption] = useState<{ key: string; value: boolean }>();
   const router = useRouter();
 
@@ -24,8 +28,13 @@ const Notes = ({ folderId }: { folderId?: Id<"folder"> }) => {
     setShowOption(undefined);
   }, []);
 
-  if (!notes) {
+  if (!_notes) {
     return <Skeleton className="w-4 h-4" />;
+  }
+
+  const handleClick = (note : any) => {
+    setCurrentNote(note)
+    router.push(`/documents/${note._id}`)
   }
 
   return (
@@ -33,12 +42,12 @@ const Notes = ({ folderId }: { folderId?: Id<"folder"> }) => {
       {!folderId && (
         <div className='flex items-center justify-between py-1 px-3 text-sm text-muted-foreground'>Notes</div>
       )}
-      {notes.map((note) => (
+      {_notes.map((note) => (
         <div
           key={note._id}
           onMouseEnter={() => handleMouseEnter(note._id)}
           onMouseLeave={handleMouseLeave}
-          onClick={() => router.push(`/documents/${note._id}`)}
+          onClick={() => handleClick(note)}
           className="flex items-center justify-between hover:bg-primary/5 py-1 px-3 cursor-pointer"
         >
           <div className="flex items-center space-x-1">
