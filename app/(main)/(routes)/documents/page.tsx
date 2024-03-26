@@ -10,14 +10,11 @@ import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
-import {useContext} from "react";
-import {INotesContext, NotesContext} from "@/context/context";
 
 const DocumentsPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const create = useMutation(api.documents.create);
-  const { setCurrentNote } = useContext(NotesContext) as INotesContext
 
   const onCreate = () => {
     const promise = create({

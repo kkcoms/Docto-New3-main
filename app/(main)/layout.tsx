@@ -36,7 +36,7 @@ const MainLayout = ({
         {navigation as JSX.Element}
         <main className="flex-1 h-full">
           <SearchCommand />
-          {/*{navbar}*/}
+          {navbar}
           <div className="h-full overflow-y-auto">
             {children}
           </div>

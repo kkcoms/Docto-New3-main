@@ -10,7 +10,7 @@ import {
   Trash,
 } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { ElementRef, useEffect, useMemo, useRef, useState } from "react";
+import {ElementRef, useContext, useEffect, useMemo, useRef, useState} from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ import { DocumentList } from "./document-list";
 import { TrashBox } from "./trash-box";
 import { Navbar } from "./navbar";
 import Notes from "@/app/(notes)/_components/notes";
+import {INotesContext, NotesContext} from "@/context/context";
 
 export const useNavigation = () => {
   const router = useRouter();
@@ -41,7 +42,7 @@ export const useNavigation = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const create = useMutation(api.documents.create);
   const createFolder = useMutation(api.folder.create);
-
+  const { current } = useContext(NotesContext) as INotesContext
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
@@ -221,6 +222,9 @@ export const useNavigation = () => {
   }, [isMobile, isResetting, isCollapsed]);
 
   const navbar = useMemo(() => {
+    if (!current)
+      return null
+
     return (
       <div
         ref={navbarRef}

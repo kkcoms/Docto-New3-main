@@ -18,18 +18,9 @@ import DetailsSection from "@/app/(main)/_components/details-section";
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import { useRouter } from 'next/navigation';
-import { CreateProjectKeyResponse, LiveClient, LiveTranscriptionEvents, createClient } from "@deepgram/sdk";
 import { PlateEditor } from "@/app/(main)/_components/summary-editor";
 import {INotesContext, NotesContext} from "@/context/context";
-
-const model = {
-  model: "nova-2-medical",
-  interim_results: true,
-  smart_format: true,
-  diarize: true,
-  utterances: true,
-  // punctuate: true,
-};
+import {ConvexClient} from "convex/browser";
 
 interface DocumentIdPageProps {
   params: {
@@ -40,6 +31,7 @@ interface DocumentIdPageProps {
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [doc, setDoc] = useState<Doc<"documents"> | null>(null)
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
@@ -59,9 +51,21 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     setSummaryNote
   } = useContext(TranscriptionContext);
 
-  const { current } = useContext(NotesContext) as INotesContext
 
-  const document = current
+  const { current, setCurrentNote } = useContext(NotesContext) as INotesContext
+  const [document, setDocument] = useState<Doc<"documents"> | null>(null)
+  console.log(current)
+  let _document = useQuery(api.documents.getById, current === null || current._id !== params.documentId ? {
+    documentId: params.documentId
+  } : "skip")
+
+
+  useEffect(() => {
+    if (_document)
+      setDocument(_document);
+    else if (current)
+      setDocument(current);
+  }, [_document])
 
   useEffect(() => {
     clearFinalTranscriptions();
@@ -97,10 +101,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   }, [document]);
 
-  useEffect(() => {
-    if (!document)
-        router.push("/documents")
-  }, [])
   if (!document) {
     return (
       <div>
@@ -116,6 +116,9 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       </div>
     );
   }
+
+  if (document)
+    setCurrentNote(document)
 
   return (
     <div className="flex h-full justify-end">
@@ -171,5 +174,4 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     </div>
   );
 };
-
 export default DocumentIdPage;
