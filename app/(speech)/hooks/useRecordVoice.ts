@@ -1,14 +1,12 @@
 import { useEffect, useState, useCallback, useContext, useRef } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import {
-  CreateProjectKeyResponse,
   LiveClient,
   LiveTranscriptionEvents,
   createClient,
 } from "@deepgram/sdk";
 import { useQueue } from "@uidotdev/usehooks";
 import TranscriptionContext from "../app/components/TranscriptionContext";
-import { createMediaStream } from "../utils/createMediaStream";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Transcription } from "@/app/types";
@@ -52,15 +50,16 @@ async function convertWavToMp3(wavBlob: Blob): Promise<Blob> {
   });
 }
 
-
-
+let connected = false
+let connection : LiveClient | null = null
+let listening = false
+let encoder: void | null = null
+let started = false;
 export const useRecordVoice = (
   documentId: Id<"documents">,
   onTranscriptionComplete: any
 ) => {
   const { add, remove, first, size, queue } = useQueue<any>([]);
-  const [connection, setConnection] = useState<LiveClient | null>();
-  const [isListening, setListening] = useState(false);
   const [isProcessing, setProcessing] = useState(false);
   const [micOpen, setMicOpen] = useState(false);
   const [microphone, setMicrophone] = useState<MediaRecorder | null>();
@@ -117,41 +116,29 @@ export const useRecordVoice = (
       `${process.env.NEXT_PUBLIC_VOICELY_API_SECRET}`
     );
 
-    const connection = deepgram.listen.live(model);
-    let keepAliveInterval: NodeJS.Timeout | null = null;
+    connection = deepgram.listen.live(model);
 
     connection.on(LiveTranscriptionEvents.Open, () => {
+      connected = true;
       console.log("connection established");
-      setListening(true);
-
-      // Start sending silent audio data periodically
-      keepAliveInterval = setInterval(() => {
-        if (isListening) {
-          const silentBuffer = new ArrayBuffer(1024);
-          connection?.send(silentBuffer);
-          console.log("sending silent audio data");
-        }
-      }, 2000);
+      listening = true;
     });
 
     connection.on(LiveTranscriptionEvents.Close, () => {
       console.log("connection closed");
-      setListening(false);
-      setConnection(null);
-
-      // Clear the keep-alive interval when the connection closes
-      if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-      }
+      listening = false;
+      connection = null
+      connected = false
 
       // Retry the connection only if the microphone is still open
-      if (micOpen) {
-        retryTimeout = setTimeout(() => {
-          console.log("Retrying the connection...");
-          startRecording();
-        }, 100);
-      }
+      retryTimeout = setTimeout(() => {
+        console.log("Retrying the connection...");
+        setRecorder().then((response) => {
+          if (response === null) return
+          setUserMedia(response.stream);
+          setMicrophone(response.microphone);
+        })
+      }, 1000);
     });
 
     connection.on(LiveTranscriptionEvents.Error, (error) => {
@@ -193,53 +180,76 @@ export const useRecordVoice = (
         }
       }
     });
-
-    setConnection(connection);
   };
 
-  const startRecording = useCallback(async () => {
-    if (!microphone && !userMedia) {
-      await connectWavEncoder();
-      const userMedia = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
+  const setRecorder : () => Promise<{microphone: MediaRecorder, stream: MediaStream} | null> = async () => {
+    debugger
+    if (microphone && userMedia) return null;
+    if (encoder === null)
+      encoder = await connectWavEncoder();
+    const _userMedia = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
 
-      generateNewSessionId();
+    generateNewSessionId();
 
-      const mediaRecorder = new MediaRecorder(userMedia, {
-        mimeType: 'audio/wav',
-      });
-      mediaRecorder.start(500);
+    const mediaRecorder = new MediaRecorder(_userMedia, {
+      mimeType: 'audio/wav',
+    });
 
-      mediaRecorder.onstart = () => {
-        setMicOpen(true);
+    mediaRecorder.onstart = () => {
+      setMicOpen(true);
+      if (started === false)
         chunks.current = [];
-        console.log("useRecordVoice.js - MediaRecorder started");
-        setupDeepgramConnection();
-      };
+      started = true
+      console.log("useRecordVoice.js - MediaRecorder started");
+      setupDeepgramConnection();
+    };
 
-      mediaRecorder.ondataavailable = (e) => {
-        add(e.data);
-        chunks.current.push(e.data);
-      };
 
-      setUserMedia(userMedia);
-      setMicrophone(mediaRecorder as MediaRecorder);
+
+    mediaRecorder.ondataavailable = (e) => {
+      add(e.data);
+      chunks.current.push(e.data);
+    };
+
+    return {
+      microphone: mediaRecorder as MediaRecorder,
+      stream: _userMedia as MediaStream
     }
+  }
+
+  const startRecording = useCallback(async () => {
+    console.log("trying")
+    setRecorder().then((response) => {
+      if (response === null) {
+        microphone?.start(500)
+        return
+      }
+      setUserMedia(response.stream);
+      setMicrophone(response.microphone);
+      console.log(microphone)
+      response.microphone.start(500);
+    })
   }, [connection, microphone, userMedia]);
 
   const pauseRecording = useCallback(() => {
     if (microphone && userMedia && microphone.state === "recording") {
       microphone.pause();
-      console.log("Recording paused");
+      const keepAliveInterval = () => setInterval(() => {
+        if (listening) {
+          const silentBuffer = new ArrayBuffer(1024);
+          connection?.send(silentBuffer);
+          console.log("sending silent audio data");
+        }
+        keepAliveInterval()
+      }, 2000);
+      console.log("pausing", connected, connection)
     }
   }, [microphone, userMedia]);
 
   const resumeRecording = useCallback(() => {
-    if (microphone && userMedia && microphone.state === "paused") {
-      microphone.resume();
-      console.log("Recording resumed");
-    }
+    startRecording().then(() => console.log("resuming recording"))
   }, [microphone, userMedia]);
 
   const stopRecording = useCallback(async () => {
@@ -252,7 +262,6 @@ export const useRecordVoice = (
 
       if (connection) {
         connection.finish();
-        setConnection(null);
       }
 
       if (retryTimeout) {
@@ -349,7 +358,7 @@ export const useRecordVoice = (
       if (size > 0 && !isProcessing) {
         setProcessing(true);
 
-        if (isListening) {
+        if (listening) {
           const blob = first;
           connection?.send(blob);
           remove();
@@ -363,7 +372,7 @@ export const useRecordVoice = (
     };
 
     processQueue();
-  }, [connection, queue, remove, first, size, isProcessing, isListening]);
+  }, [connection, queue, remove, first, size, isProcessing, listening]);
 
   return {
     micOpen,
