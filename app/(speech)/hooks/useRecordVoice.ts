@@ -55,6 +55,8 @@ let connection : LiveClient | null = null
 let listening = false
 let encoder: void | null = null
 let started = false;
+let temp_timer = 0
+let previous_timer = 0
 export const useRecordVoice = (
   documentId: Id<"documents">,
   onTranscriptionComplete: any
@@ -129,7 +131,8 @@ export const useRecordVoice = (
       listening = false;
       connection = null
       connected = false
-
+      previous_timer += temp_timer
+      temp_timer = 0
       // Retry the connection only if the microphone is still open
       retryTimeout = setTimeout(() => {
         console.log("Retrying the connection...");
@@ -148,12 +151,13 @@ export const useRecordVoice = (
     connection.on(LiveTranscriptionEvents.Transcript, (data) => {
       const alternatives = data.channel.alternatives[0];
       const words = alternatives.words;
+      console.log(chunks)
       console.log("words detected", words);
       if (words && words.length > 0) {
         const speaker = words[0].speaker;
         const startSeconds = words[0].start;
-
-        const formattedTimestamp = formatTimestamp(startSeconds);
+        temp_timer = startSeconds
+        const formattedTimestamp = formatTimestamp(previous_timer + temp_timer);
 
         const isFinal = data.is_final;
 
@@ -183,7 +187,6 @@ export const useRecordVoice = (
   };
 
   const setRecorder : () => Promise<{microphone: MediaRecorder, stream: MediaStream} | null> = async () => {
-    debugger
     if (microphone && userMedia) return null;
     if (encoder === null)
       encoder = await connectWavEncoder();

@@ -54,7 +54,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   const { current, setCurrentNote } = useContext(NotesContext) as INotesContext
   const [document, setDocument] = useState<Doc<"documents"> | null>(null)
-  console.log(current)
   let _document = useQuery(api.documents.getById, current === null || current._id !== params.documentId ? {
     documentId: params.documentId
   } : "skip")
