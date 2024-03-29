@@ -7,8 +7,8 @@ import {
 } from "@deepgram/sdk";
 import { useQueue } from "@uidotdev/usehooks";
 import TranscriptionContext from "../app/components/TranscriptionContext";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import {useAction, useMutation} from "convex/react";
+import {api, fullApi} from "@/convex/_generated/api";
 import { Transcription } from "@/app/types";
 import { formatTimestamp } from "@/app/(speech)/utils";
 import { MediaRecorder, register } from 'extendable-media-recorder';
@@ -70,6 +70,7 @@ export const useRecordVoice = (
   const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
   const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio);
   const updateDocument = useMutation(api.documents.update);
+  let getMP3File = useAction(api.audio.uploadNoteAudio)
   const updateSummaryNote = useMutation(api.documents.saveSummaryNote);
 
   const {
@@ -275,65 +276,74 @@ export const useRecordVoice = (
       setMicOpen(false);
       setisDisabledRecordButton(true);
       const wavBlob = new Blob(chunks.current, { type: "audio/wav" });
+
       console.log("useRecordVoice.js - MediaRecorder stopped");
-
       try {
-        const mp3Blob = await convertWavToMp3(wavBlob);
-        const postUrl = await generateUploadUrl();
-        console.log("is transcribing audio file, postUrl is", postUrl);
 
-        const result = await fetch(postUrl, {
-          method: "POST",
-          headers: { "Content-Type": "audio/mp3" },
-          body: mp3Blob,
-        });
-        const audioFileRef = await result.json();
+        const wavBuffer = await wavBlob.arrayBuffer()
+        const data = await getMP3File({
+          documentId: documentId,
+          data: wavBuffer
+        })
 
-        const uploadResult = await updateNoteWithAudio({
-          noteId: documentId,
-          audioFileRef: audioFileRef.storageId,
-          storageId: audioFileRef.storageId,
-        });
-        if (uploadResult.success) {
-          setAudioFileUrl(uploadResult.fileUrl);
-          const transcribeResponse = await fetch("/api/deepgram/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              url: uploadResult.fileUrl,
-            }),
-          });
-          const utteranceResult = await transcribeResponse.json();
-          console.log("utteranceResult", utteranceResult);
+        console.log(">>>>> data: ", data)
 
-          clearFinalTranscriptions();
 
-          const utterances = utteranceResult.results.utterances;
-          utterances.map(function (transcription: Transcription, index: any) {
-            transcription.timestamp = formatTimestamp(transcription.start);
-            addFinalTranscription(transcription);
-          });
-
-          const summary =
-            utteranceResult.results.channels[0].alternatives[0].transcript;
-          if (summary) {
-            const summaryNote = await sendSummaryForBlocknote(summary);
-            if (summaryNote) {
-              setSummarizationResult(summaryNote);
-              setSummaryNote(summaryNote);
-              await updateDocument({
-                id: documentId,
-                content: JSON.stringify(utterances),
-                summarizationResult: summaryNote,
-                summaryNote: summaryNote,
-              });
-              setIsTranscribed(true);
-              setisDisabledRecordButton(false);
-            }
-          }
-        }
+        // const postUrl = await generateUploadUrl();
+        // console.log("is transcribing audio file, postUrl is", postUrl);
+        //
+        // const result = await fetch(postUrl, {
+        //   method: "POST",
+        //   headers: { "Content-Type": "audio/mp3" },
+        //   body: mp3Blob,
+        // });
+        // const audioFileRef = await result.json();
+        //
+        // const uploadResult = await updateNoteWithAudio({
+        //   noteId: documentId,
+        //   audioFileRef: audioFileRef.storageId,
+        //   storageId: audioFileRef.storageId,
+        // });
+        // if (uploadResult.success) {
+        //   setAudioFileUrl(uploadResult.fileUrl);
+        //   const transcribeResponse = await fetch("/api/deepgram/", {
+        //     method: "POST",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({
+        //       url: uploadResult.fileUrl,
+        //     }),
+        //   });
+        //   const utteranceResult = await transcribeResponse.json();
+        //   console.log("utteranceResult", utteranceResult);
+        //
+        //   clearFinalTranscriptions();
+        //
+        //   const utterances = utteranceResult.results.utterances;
+        //   utterances.map(function (transcription: Transcription, index: any) {
+        //     transcription.timestamp = formatTimestamp(transcription.start);
+        //     addFinalTranscription(transcription);
+        //   });
+        //
+        //   const summary =
+        //     utteranceResult.results.channels[0].alternatives[0].transcript;
+        //   if (summary) {
+        //     const summaryNote = await sendSummaryForBlocknote(summary);
+        //     if (summaryNote) {
+        //       setSummarizationResult(summaryNote);
+        //       setSummaryNote(summaryNote);
+        //       await updateDocument({
+        //         id: documentId,
+        //         content: JSON.stringify(utterances),
+        //         summarizationResult: summaryNote,
+        //         summaryNote: summaryNote,
+        //       });
+        //       setIsTranscribed(true);
+        //       setisDisabledRecordButton(false);
+        //     }
+        //   }
+        // }
       } catch (error) {
         console.error("Error uploading audio:", error);
       }

@@ -5,6 +5,7 @@ import { mutation, query } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 
 import { mutationWithUser } from './utils';
+import {useAction} from "convex/react";
 
 
 // In documents.ts
@@ -22,6 +23,16 @@ export const updateNoteWithAudio = mutationWithUser({
     return { success: true, fileUrl };
   },
 });
+
+export const updateNoteAudio = mutationWithUser({
+  args: {
+    audio: v.bytes(),
+    noteId: v.id("documents")
+  },
+  handler: async(ctx, {audio, noteId}) => {
+
+  }
+})
 
 
 export const generateUploadUrl = mutationWithUser({
