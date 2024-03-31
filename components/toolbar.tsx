@@ -12,15 +12,24 @@ import { IconPicker } from "./icon-picker";
 interface ToolbarProps {
   initialData: Doc<"documents">;
   preview?: boolean;
+
+  duration?: number
 }
 
-export const Toolbar = ({ initialData, preview }: ToolbarProps) => {
+export const Toolbar = ({ initialData, preview, duration }: ToolbarProps) => {
   const inputRef = useRef<ElementRef<"textarea">>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(initialData.title);
   const [isHovering, setIsHovering] = useState(false);
   const update = useMutation(api.documents.update);
   const removeIcon = useMutation(api.documents.removeIcon);
+
+  function secondsToTime(seconds : number | undefined) : string {
+    if (!seconds) return ``;
+    let minutes = Math.floor(seconds / 60);
+    let remainingSeconds = Math.round(seconds % 60);
+    return (minutes < 10 ? '0' : '') + minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+  }
 
   // State to hold the note creation date and time
   const noteCreationDateTime = initialData.noteCreationDateTime
@@ -120,7 +129,7 @@ return (
         {noteCreationDateTime && (
           <div className="flex flex-row items-center text-xs md:text-sm text-gray-500 dark:text-[#CFCFCF]">
             <TimerIcon className="h-4 w-4 mr-2" />
-            {/* 24:13 */}
+            {secondsToTime(duration)}
           </div>
         )}
       </div>

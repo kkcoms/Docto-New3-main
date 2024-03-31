@@ -34,7 +34,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const [doc, setDoc] = useState<Doc<"documents"> | null>(null)
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
-
+  const [duration, setDuration] = useState<number>()
   const {
     isDisabledRecordButton,
     audioFileUrl,
@@ -58,7 +58,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     documentId: params.documentId
   } : "skip")
 
-
+  console.log(audioFileUrl)
   useEffect(() => {
     if (_document)
       setDocument(_document);
@@ -135,7 +135,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
           )}
 
           <div className="body flex flex-col gap-y-[16px] dark:bg-[#1F1F1F]  ">
-            <Toolbar initialData={document} />
+            <Toolbar initialData={document} duration={duration} />
             <Tabs>
             <TabList className="react-tabs__tab-list2">
                 <Tab selectedClassName="TabsTrigger ">
@@ -163,6 +163,12 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
               // autoPlay
               src={audioFileUrl}
               preload="metadata"
+              onLoadedMetaData={(data : any) => {
+                if (data?.srcElement?.duration && !duration) {
+                  setDuration(data?.srcElement?.duration)
+                }
+              }
+              }
               onListen={(e: any) => setAudioCurrentTime(parseFloat(e.srcElement.currentTime))}
             // other props here
             />
