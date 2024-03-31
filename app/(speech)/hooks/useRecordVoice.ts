@@ -26,30 +26,6 @@ async function connectWavEncoder() {
   await register(await connect());
 }
 
-async function convertWavToMp3(wavBlob: Blob): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const arrayBuffer = reader.result as ArrayBuffer;
-      const wavDecoder = (lamejs.WavHeader as any).readHeader(new DataView(arrayBuffer));
-      const wavSamplesLength = (arrayBuffer.byteLength - wavDecoder.dataOffset) / 2;
-      const wavSamples = new Int16Array(arrayBuffer, wavDecoder.dataOffset, wavSamplesLength);
-      const mp3Encoder = new lamejs.Mp3Encoder(wavDecoder.channels, wavDecoder.sampleRate, 128);
-      const mp3Buffer = mp3Encoder.encodeBuffer(wavSamples);
-      const mp3Data = mp3Encoder.flush();
-      const mp3BufferWithHeader = new Uint8Array(mp3Buffer.length + mp3Data.length);
-      mp3BufferWithHeader.set(mp3Buffer, 0);
-      mp3BufferWithHeader.set(mp3Data, mp3Buffer.length);
-      const mp3Blob = new Blob([mp3BufferWithHeader], { type: 'audio/mp3' });
-      resolve(mp3Blob);
-    };
-    reader.onerror = (error) => {
-      reject(error);
-    };
-    reader.readAsArrayBuffer(wavBlob);
-  });
-}
-
 let connected = false
 let connection : LiveClient | null = null
 let listening = false
@@ -134,15 +110,6 @@ export const useRecordVoice = (
       connected = false
       previous_timer += temp_timer
       temp_timer = 0
-      // Retry the connection only if the microphone is still open
-      retryTimeout = setTimeout(() => {
-        console.log("Retrying the connection...");
-        setRecorder().then((response) => {
-          if (response === null) return
-          setUserMedia(response.stream);
-          setMicrophone(response.microphone);
-        })
-      }, 1000);
     });
 
     connection.on(LiveTranscriptionEvents.Error, (error) => {
@@ -152,8 +119,6 @@ export const useRecordVoice = (
     connection.on(LiveTranscriptionEvents.Transcript, (data) => {
       const alternatives = data.channel.alternatives[0];
       const words = alternatives.words;
-      console.log(chunks)
-      console.log("words detected", words);
       if (words && words.length > 0) {
         const speaker = words[0].speaker;
         const startSeconds = words[0].start;
@@ -281,69 +246,60 @@ export const useRecordVoice = (
       try {
 
         const wavBuffer = await wavBlob.arrayBuffer()
-        const data = await getMP3File({
+        const upload = await getMP3File({
           documentId: documentId,
           data: wavBuffer
         })
 
-        console.log(">>>>> data: ", data)
+        console.log(">>>>> data: ", upload)
 
+        if (!upload?.success)
+          return
 
-        // const postUrl = await generateUploadUrl();
-        // console.log("is transcribing audio file, postUrl is", postUrl);
-        //
-        // const result = await fetch(postUrl, {
-        //   method: "POST",
-        //   headers: { "Content-Type": "audio/mp3" },
-        //   body: mp3Blob,
-        // });
-        // const audioFileRef = await result.json();
-        //
-        // const uploadResult = await updateNoteWithAudio({
-        //   noteId: documentId,
-        //   audioFileRef: audioFileRef.storageId,
-        //   storageId: audioFileRef.storageId,
-        // });
-        // if (uploadResult.success) {
-        //   setAudioFileUrl(uploadResult.fileUrl);
-        //   const transcribeResponse = await fetch("/api/deepgram/", {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //       url: uploadResult.fileUrl,
-        //     }),
-        //   });
-        //   const utteranceResult = await transcribeResponse.json();
-        //   console.log("utteranceResult", utteranceResult);
-        //
-        //   clearFinalTranscriptions();
-        //
-        //   const utterances = utteranceResult.results.utterances;
-        //   utterances.map(function (transcription: Transcription, index: any) {
-        //     transcription.timestamp = formatTimestamp(transcription.start);
-        //     addFinalTranscription(transcription);
-        //   });
-        //
-        //   const summary =
-        //     utteranceResult.results.channels[0].alternatives[0].transcript;
-        //   if (summary) {
-        //     const summaryNote = await sendSummaryForBlocknote(summary);
-        //     if (summaryNote) {
-        //       setSummarizationResult(summaryNote);
-        //       setSummaryNote(summaryNote);
-        //       await updateDocument({
-        //         id: documentId,
-        //         content: JSON.stringify(utterances),
-        //         summarizationResult: summaryNote,
-        //         summaryNote: summaryNote,
-        //       });
-        //       setIsTranscribed(true);
-        //       setisDisabledRecordButton(false);
-        //     }
-        //   }
-        // }
+        setAudioFileUrl(upload.fileUrl);
+        const transcribeResponse = await fetch("/api/deepgram/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: upload.fileUrl,
+          }),
+        });
+
+        const utteranceResult = await transcribeResponse.json();
+        console.log("utteranceResult", utteranceResult);
+
+        clearFinalTranscriptions();
+
+        const utterances = utteranceResult.results.utterances;
+        utterances.map(function (transcription: Transcription, index: any) {
+          transcription.timestamp = formatTimestamp(transcription.start);
+          addFinalTranscription(transcription);
+        });
+
+        const summary =
+          utteranceResult.results.channels[0].alternatives[0].transcript;
+
+        if (!summary)
+          return
+
+        const summaryNote = await sendSummaryForBlocknote(summary);
+
+        if (!summaryNote)
+          return
+
+        setSummarizationResult(summaryNote);
+        setSummaryNote(summaryNote);
+        await updateDocument({
+          id: documentId,
+          content: JSON.stringify(utterances),
+          summarizationResult: summaryNote,
+          summaryNote: summaryNote,
+        });
+        setIsTranscribed(true);
+        setisDisabledRecordButton(false);
+
       } catch (error) {
         console.error("Error uploading audio:", error);
       }
@@ -380,7 +336,7 @@ export const useRecordVoice = (
         const waiting = setTimeout(() => {
           clearTimeout(waiting);
           setProcessing(false);
-        }, 250);
+        }, 1000);
       }
     };
 
