@@ -18,6 +18,7 @@ import type * as audio from "../audio.js";
 import type * as documents from "../documents.js";
 import type * as folder from "../folder.js";
 import type * as note from "../note.js";
+import type * as openAI from "../openAI.js";
 import type * as utils from "../utils.js";
 
 /**
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   folder: typeof folder;
   note: typeof note;
+  openAI: typeof openAI;
   utils: typeof utils;
 }>;
 export declare const api: FilterApi<

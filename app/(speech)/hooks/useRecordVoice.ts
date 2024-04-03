@@ -14,6 +14,7 @@ import { formatTimestamp } from "@/app/(speech)/utils";
 import { MediaRecorder, register } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
 import * as lamejs from '@breezystack/lamejs';
+import useSummarize from "@/hooks/use-summarize";
 
 const model = {
   model: "nova-2-medical",
@@ -48,6 +49,7 @@ export const useRecordVoice = (
   const updateDocument = useMutation(api.documents.update);
   let getMP3File = useAction(api.audio.uploadNoteAudio)
   const updateSummaryNote = useMutation(api.documents.saveSummaryNote);
+  const summarize = useSummarize()
 
   const {
     setLiveTranscription,
@@ -283,19 +285,21 @@ export const useRecordVoice = (
 
         if (!summary)
           return
+        let _summary = await summarize("The patient said that his head hurt and his knee is clearly messed up. " +
+          "First we need to do surgery on that knee and we need to make a resonance for the head")
 
-        const summaryNote = await sendSummaryForBlocknote(summary);
+        _summary = _summary?.choices[0]?.message?.content
 
-        if (!summaryNote)
-          return
+        console.log("SMR:",_summary)
 
-        setSummarizationResult(summaryNote);
-        setSummaryNote(summaryNote);
+        setSummarizationResult(_summary);
+        setSummaryNote(_summary);
+
         await updateDocument({
           id: documentId,
           content: JSON.stringify(utterances),
-          summarizationResult: summaryNote,
-          summaryNote: summaryNote,
+          summarizationResult: _summary,
+          summaryNote: _summary,
         });
         setIsTranscribed(true);
         setisDisabledRecordButton(false);
