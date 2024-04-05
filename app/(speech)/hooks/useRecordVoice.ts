@@ -15,6 +15,7 @@ import { MediaRecorder, register } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
 import * as lamejs from '@breezystack/lamejs';
 import useSummarize from "@/hooks/use-summarize";
+import useStringToPlate from "@/hooks/use-string-to-plate";
 
 const model = {
   model: "nova-2-medical",
@@ -50,6 +51,7 @@ export const useRecordVoice = (
   let getMP3File = useAction(api.audio.uploadNoteAudio)
   const updateSummaryNote = useMutation(api.documents.saveSummaryNote);
   const summarize = useSummarize()
+  const stringToPlate = useStringToPlate()
 
   const {
     setLiveTranscription,
@@ -290,7 +292,9 @@ export const useRecordVoice = (
 
         _summary = _summary?.choices[0]?.message?.content
 
-        console.log("SMR:",_summary)
+        _summary = stringToPlate(_summary)
+
+        _summary = JSON.stringify(_summary)
 
         setSummarizationResult(_summary);
         setSummaryNote(_summary);

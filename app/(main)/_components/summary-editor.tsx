@@ -5,7 +5,7 @@ import {
   createPlugins,
   Plate,
   RenderAfterEditable,
-  PlateLeaf,
+  PlateLeaf, TElement, Value,
 } from "@udecode/plate-common";
 import {
   createParagraphPlugin,
@@ -107,7 +107,7 @@ import { createTrailingBlockPlugin } from "@udecode/plate-trailing-block";
 import {
   createCommentsPlugin,
   CommentsProvider,
-  MARK_COMMENT,
+  MARK_COMMENT, useHooksComments, useCommentLeafState, useCommentById,
 } from "@udecode/plate-comments";
 import { createDeserializeDocxPlugin } from "@udecode/plate-serializer-docx";
 import { createDeserializeCsvPlugin } from "@udecode/plate-serializer-csv";
@@ -153,6 +153,10 @@ import { withPlaceholders } from "@/components/plate-ui/placeholder";
 import { withDraggables } from "@/components/plate-ui/with-draggables";
 import { EmojiCombobox } from "@/components/plate-ui/emoji-combobox";
 import { TooltipProvider } from "@/components/plate-ui/tooltip";
+import {useContext, useEffect, useState} from "react";
+import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
+import useStringToPlate, {IPlateElement} from "@/hooks/use-string-to-plate";
+import useUpdateSummary from "@/hooks/use-update-summary";
 
 const plugins = createPlugins(
   [
@@ -306,7 +310,9 @@ const plugins = createPlugins(
     createTrailingBlockPlugin({
       options: { type: ELEMENT_PARAGRAPH },
     }),
-    createCommentsPlugin(),
+    createCommentsPlugin({
+
+    }),
     createDeserializeDocxPlugin(),
     createDeserializeCsvPlugin(),
     createDeserializeMdPlugin(),
@@ -354,6 +360,14 @@ const plugins = createPlugins(
   }
 );
 
+const users = {
+  1: {
+    id: '1',
+    name: 'zbeyens',
+    avatarUrl: 'https://avatars.githubusercontent.com/u/19695832?s=96&v=4',
+  }
+}
+
 const initialValue = [
   {
     id: "1",
@@ -361,14 +375,31 @@ const initialValue = [
     children: [{ text: "Hello, World!" }],
   },
 ];
-
 export function PlateEditor() {
+  const {
+    summaryNote,
+  } = useContext(TranscriptionContext);
+
+  const updateSummary = useUpdateSummary("j57dwjdcrddbc5z8hxjdfae21d6pjyn5")
+  const stringToPlate = useStringToPlate()
+
+  const initial : any = JSON.parse(summaryNote)
+
+  const handleUpdate = (e: any) => {
+    let temp = JSON.stringify(e)
+    console.log(e)
+    updateSummary(temp)
+  }
+
+  const comment = useCommentById("comment_RfsbY4yw59ryCt4ZOactJ")
+
+  console.log(comment)
   return (
     <TooltipProvider
       children={
         <DndProvider backend={HTML5Backend}>
-          <CommentsProvider users={{}} myUserId="1">
-            <Plate plugins={plugins} initialValue={initialValue}>
+          <CommentsProvider users={users} myUserId="1">
+            <Plate plugins={plugins} initialValue={initial} onChange={(e) => handleUpdate(e)}>
               <FixedToolbar>
                 <FixedToolbarButtons />
               </FixedToolbar>

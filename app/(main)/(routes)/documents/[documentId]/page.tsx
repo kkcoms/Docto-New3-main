@@ -1,6 +1,6 @@
 // page.tsx
 "use client";
-import { useMutation, useQuery } from "convex/react";
+import {useAction, useMutation, useQuery} from "convex/react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import Transcription from "@/app/(speech)/app/components/Transcription";
@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { PlateEditor } from "@/app/(main)/_components/summary-editor";
 import {INotesContext, NotesContext} from "@/context/context";
 import {ConvexClient} from "convex/browser";
+import Summarized from "@/components/summarized";
 
 interface DocumentIdPageProps {
   params: {
@@ -150,8 +151,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
                 <Transcription />
               </TabPanel>
               <TabPanel>
-              <PlateEditor/>
-                {summarizationResult}
+                <PlateEditor/>
               </TabPanel>
             </Tabs>
           </div>
