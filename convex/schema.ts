@@ -15,13 +15,17 @@ export default defineSchema({
     noteCreationDateTime: v.optional(v.string()), // Add this line
     summarizationResult: v.optional(v.string()), // Add this line for summary
     summaryNote: v.optional(v.string()),
-    audioFileRef: v.optional(v.string()), // Add this line for the audio file reference    
+    audioFileRef: v.optional(v.string()), // Add this line for the audio file reference
     audioFileUrl: v.optional(v.string()),
     folderId: v.optional(v.string()),
   })
   .index("by_user", ["userId"])
   .index("by_user_parent", ["userId", "parentDocument"])
-  .index("by_user_folder", ["userId", "folderId"])
+  .index("by_user_folder", ["userId", "folderId"]),
+  comments: defineTable({
+    documentId: v.id("documents"),
+    data: v.string()
+  }).index("by_document",["documentId"])
 
   ,
   folder: defineTable({

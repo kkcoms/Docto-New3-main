@@ -52,6 +52,7 @@
     "@udecode/plate-heading": "^30.5.3",
     "@udecode/plate-highlight": "^30.5.3",
     "@udecode/plate-horizontal-rule": "^30.5.3",
+    "@udecode/plate-html-serializer": "^7.0.2",
     "@udecode/plate-indent": "^30.5.3",
     "@udecode/plate-indent-list": "^30.5.3",
     "@udecode/plate-juice": "^30.5.3",

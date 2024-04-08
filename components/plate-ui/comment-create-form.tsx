@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import { cn } from '@udecode/cn';
 import {
   CommentNewSubmitButton,
@@ -11,9 +11,25 @@ import {
 import { buttonVariants } from './button';
 import { CommentAvatar } from './comment-avatar';
 import { inputVariants } from './input';
+import {api} from "@/convex/_generated/api";
+import {useMutation} from "convex/react";
+import {Id} from "@/convex/_generated/dataModel";
 
 export function CommentCreateForm() {
   const myUserId = useCommentsSelectors().myUserId();
+
+  const updateNoteComments = useMutation(api.comments.addOrUpdate)
+
+  const comment = useCommentsSelectors().comments()
+
+
+  useEffect(() => {
+    if (comment)
+      updateNoteComments({
+        documentId: "j57dwjdcrddbc5z8hxjdfae21d6pjyn5" as Id<"documents">,
+        data: JSON.stringify(comment)
+      }).then(resp => console.log("UPDATED!", resp))
+  }, [comment])
 
   return (
     <div className="flex w-full space-x-2">

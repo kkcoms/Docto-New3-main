@@ -1,5 +1,3 @@
-"use client";
-
 import { withProps } from "@udecode/cn";
 import {
   createPlugins,
@@ -107,7 +105,7 @@ import { createTrailingBlockPlugin } from "@udecode/plate-trailing-block";
 import {
   createCommentsPlugin,
   CommentsProvider,
-  MARK_COMMENT, useHooksComments, useCommentLeafState, useCommentById,
+  MARK_COMMENT, useHooksComments, useCommentLeafState, useCommentById, useCommentsSelectors, useCommentsActions,
 } from "@udecode/plate-comments";
 import { createDeserializeDocxPlugin } from "@udecode/plate-serializer-docx";
 import { createDeserializeCsvPlugin } from "@udecode/plate-serializer-csv";
@@ -153,13 +151,34 @@ import { withPlaceholders } from "@/components/plate-ui/placeholder";
 import { withDraggables } from "@/components/plate-ui/with-draggables";
 import { EmojiCombobox } from "@/components/plate-ui/emoji-combobox";
 import { TooltipProvider } from "@/components/plate-ui/tooltip";
-import {useContext, useEffect, useState} from "react";
+import {MutableRefObject, useContext, useEffect, useRef, useState} from "react";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 import useStringToPlate, {IPlateElement} from "@/hooks/use-string-to-plate";
 import useUpdateSummary from "@/hooks/use-update-summary";
+import {useQuery} from "convex/react";
+import {api} from "@/convex/_generated/api";
+import {Id} from "@/convex/_generated/dataModel";
+import {serializeHtml} from "@udecode/plate-serializer-html";
+import {createPluginFactory, useEditorState} from "@udecode/plate";
+import {serializeHTMLFromNodes} from "@udecode/plate-html-serializer";
+import {INotesContext, NotesContext} from "@/context/context";
 
+// const createCustomPlugin = createPluginFactory({
+//   key: "KEY_CUSTOM",
+//   handlers: {
+//     onChange: (editor) => (value) => {
+//       // @ts-ignore
+//       const html = serializeHTMLFromNodes(editor,{
+//         nodes: value
+//       })
+//
+//       console.log(html)
+//     }
+//   }
+// })
 const plugins = createPlugins(
   [
+
     createParagraphPlugin(),
     createHeadingPlugin(),
     createBlockquotePlugin(),
@@ -380,32 +399,57 @@ export function PlateEditor() {
     summaryNote,
   } = useContext(TranscriptionContext);
 
+  const [comments, setComments] = useState<any>()
+  const [html, setHtml] = useState<string | null>(null)
+  const { setSummary } = useContext(NotesContext) as INotesContext
+
+  let commentData = useQuery(api.comments.getById, {
+    documentId: "j57dwjdcrddbc5z8hxjdfae21d6pjyn5" as Id<"documents">
+  }) as any
+
+
+  useEffect(() => {
+    if (commentData) {
+      setComments(JSON.parse(commentData.data))
+    }
+  }, [commentData])
+
   const updateSummary = useUpdateSummary("j57dwjdcrddbc5z8hxjdfae21d6pjyn5")
   const stringToPlate = useStringToPlate()
 
   const initial : any = JSON.parse(summaryNote)
 
+  const editor = useEditorState()
   const handleUpdate = (e: any) => {
     let temp = JSON.stringify(e)
-    console.log(e)
     updateSummary(temp)
+    setHtml(editorContents?.current?.innerHTML)
+    setSummary(editorContents?.current?.innerHTML)
   }
 
-  const comment = useCommentById("comment_RfsbY4yw59ryCt4ZOactJ")
+  useEffect(() => {
+    setHtml(editorContents?.current?.innerHTML)
+    setSummary(editorContents?.current?.innerHTML)
+  },[])
 
-  console.log(comment)
+
+  const editorContents = useRef<any>()
+
   return (
     <TooltipProvider
       children={
         <DndProvider backend={HTML5Backend}>
-          <CommentsProvider users={users} myUserId="1">
+          <CommentsProvider users={users} comments={comments} myUserId="1">
             <Plate plugins={plugins} initialValue={initial} onChange={(e) => handleUpdate(e)}>
               <FixedToolbar>
                 <FixedToolbarButtons />
               </FixedToolbar>
 
-              <Editor />
-
+              <Editor renderEditable={(children) => (
+                <div ref={editorContents}>
+                  {children}
+                </div>
+              )} />
               <FloatingToolbar>
                 <FloatingToolbarButtons />
               </FloatingToolbar>

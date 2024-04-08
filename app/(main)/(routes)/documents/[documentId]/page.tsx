@@ -22,6 +22,7 @@ import { PlateEditor } from "@/app/(main)/_components/summary-editor";
 import {INotesContext, NotesContext} from "@/context/context";
 import {ConvexClient} from "convex/browser";
 import Summarized from "@/components/summarized";
+import {PlateController} from "@udecode/plate";
 
 interface DocumentIdPageProps {
   params: {
@@ -151,7 +152,9 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
                 <Transcription />
               </TabPanel>
               <TabPanel>
-                <PlateEditor/>
+                <PlateController>
+                  <PlateEditor/>
+                </PlateController>
               </TabPanel>
             </Tabs>
           </div>

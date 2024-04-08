@@ -15,6 +15,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as audio from "../audio.js";
+import type * as comments from "../comments.js";
 import type * as documents from "../documents.js";
 import type * as folder from "../folder.js";
 import type * as note from "../note.js";
@@ -31,6 +32,7 @@ import type * as utils from "../utils.js";
  */
 declare const fullApi: ApiFromModules<{
   audio: typeof audio;
+  comments: typeof comments;
   documents: typeof documents;
   folder: typeof folder;
   note: typeof note;
