@@ -6,6 +6,7 @@ import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import "@blocknote/core/style.css";
 import { useEdgeStore } from "@/lib/edgestore";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
+import {INotesContext, NotesContext} from "@/context/context";
 
 interface EditorProps {
   onChange: (value: string) => void;
@@ -21,19 +22,12 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
   let initialBlocks: PartialBlock[] | undefined;
   let isError = false;
 
-  // Attempt to parse the initial content outside of the hook
-  if (initialContent) {
-    try {
-      initialBlocks = JSON.parse(initialContent);
-    } catch (error) {
-      isError = true;
-    }
-  }
+  const { summary } = useContext(NotesContext) as INotesContext
 
   const editor = useBlockNote({
     editable,
-    initialContent: initialBlocks,
     onEditorContentChange: (editor) => {
+      console.log(editor.topLevelBlocks)
       onChange(JSON.stringify(editor.topLevelBlocks, null, 2));
     },
     uploadFile: async (file: File) => {
@@ -41,27 +35,6 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
       return response.url;
     },
   });
-
-  // If there was an error parsing initialContent, handle it after the hook
-// If there was an error parsing initialContent, handle it after the hook
-useEffect(() => {
-  const fetchBlocks = async () => {
-    if (isError) {
-      const transcriptionBlockId = `transcription-${currentSessionId}`;
-      const arrayContent = initialContent?.split('\n');
-      console.log('arrayContent', arrayContent);
-
-      const blocksFromMarkdown = await editor.markdownToBlocks(arrayContent?.join('\n') || '');
-      editor.insertBlocks(
-        blocksFromMarkdown,
-        editor.topLevelBlocks[editor.topLevelBlocks.length - 1] || null,
-        "after"
-      );
-    }
-  };
-
-  fetchBlocks();
-}, [editor, isError, initialContent, currentSessionId]);
 
 
   return (

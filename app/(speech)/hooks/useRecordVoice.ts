@@ -157,7 +157,6 @@ export const useRecordVoice = (
   };
 
   const setRecorder : () => Promise<{microphone: MediaRecorder, stream: MediaStream} | null> = async () => {
-    if (microphone && userMedia) return null;
     if (encoder === null)
       encoder = await connectWavEncoder();
     const _userMedia = await navigator.mediaDevices.getUserMedia({
@@ -193,10 +192,8 @@ export const useRecordVoice = (
   }
 
   const startRecording = useCallback(async () => {
-    console.log("trying")
     setRecorder().then((response) => {
       if (response === null) {
-        microphone?.start(500)
         return
       }
       setUserMedia(response.stream);
@@ -273,6 +270,7 @@ export const useRecordVoice = (
 
         const utteranceResult = await transcribeResponse.json();
         console.log("utteranceResult", utteranceResult);
+
 
         clearFinalTranscriptions();
 

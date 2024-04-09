@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect} from 'react';
+import React, {useContext, useEffect} from 'react';
 import { cn } from '@udecode/cn';
 import {
   CommentNewSubmitButton,
@@ -14,6 +14,7 @@ import { inputVariants } from './input';
 import {api} from "@/convex/_generated/api";
 import {useMutation} from "convex/react";
 import {Id} from "@/convex/_generated/dataModel";
+import {INotesContext, NotesContext} from "@/context/context";
 
 export function CommentCreateForm() {
   const myUserId = useCommentsSelectors().myUserId();
@@ -22,11 +23,13 @@ export function CommentCreateForm() {
 
   const comment = useCommentsSelectors().comments()
 
+  const { documentId } = useContext(NotesContext) as INotesContext
+
 
   useEffect(() => {
     if (comment)
       updateNoteComments({
-        documentId: "j57dwjdcrddbc5z8hxjdfae21d6pjyn5" as Id<"documents">,
+        documentId: documentId as Id<"documents">,
         data: JSON.stringify(comment)
       }).then(resp => console.log("UPDATED!", resp))
   }, [comment])

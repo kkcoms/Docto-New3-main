@@ -28,12 +28,7 @@ const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectio
 
   const updateSummary = useMutation(api.documents.saveSummaryNote)
   const onChangeEditor = (content: string) => {
-    console.log('saving summary note', content)
 
-    updateSummary({
-      id: documentId,
-      summaryNote: content
-    });
   };
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const [isResetting, setIsResetting] = useState(false);
@@ -154,7 +149,7 @@ const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectio
           className={cn(
             "h-10 w-10 p-2 flex items-center justify-center text-[#1EAFB3] rounded-sm hover:bg-[#a7feff68] dark:hover:bg-[#a7feff68] border-solid border-2 border-[#1EAFB3] absolute top-1/2 right-2 opacity-0 group-hover/sidebar:opacity-100 transition opacity-100"
           )}
-          
+
         >
           <ChevronsLeft className="h-6 w-6" />
         </div>

@@ -159,9 +159,11 @@ import {useQuery} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import {Id} from "@/convex/_generated/dataModel";
 import {serializeHtml} from "@udecode/plate-serializer-html";
-import {createPluginFactory, useEditorState} from "@udecode/plate";
+import {createPlateEditor, createPluginFactory, useEditorState} from "@udecode/plate";
 import {serializeHTMLFromNodes} from "@udecode/plate-html-serializer";
 import {INotesContext, NotesContext} from "@/context/context";
+import usePlateSerializer from "@/hooks/use-plate-serializer";
+import {useRouter} from "next/router";
 
 // const createCustomPlugin = createPluginFactory({
 //   key: "KEY_CUSTOM",
@@ -399,14 +401,13 @@ export function PlateEditor() {
     summaryNote,
   } = useContext(TranscriptionContext);
 
+  const [ plateToBlocks ] = usePlateSerializer()
   const [comments, setComments] = useState<any>()
-  const [html, setHtml] = useState<string | null>(null)
-  const { setSummary } = useContext(NotesContext) as INotesContext
+  const { setSummary, documentId } = useContext(NotesContext) as INotesContext
 
   let commentData = useQuery(api.comments.getById, {
-    documentId: "j57dwjdcrddbc5z8hxjdfae21d6pjyn5" as Id<"documents">
+    documentId: documentId as Id<"documents">
   }) as any
-
 
   useEffect(() => {
     if (commentData) {
@@ -414,21 +415,21 @@ export function PlateEditor() {
     }
   }, [commentData])
 
-  const updateSummary = useUpdateSummary("j57dwjdcrddbc5z8hxjdfae21d6pjyn5")
+  const updateSummary = useUpdateSummary(documentId as string)
   const stringToPlate = useStringToPlate()
 
-  const initial : any = JSON.parse(summaryNote)
+  const initial : any = summaryNote ? JSON.parse(summaryNote) : undefined
 
   const editor = useEditorState()
-  const handleUpdate = (e: any) => {
+  const handleUpdate = (e: Value) => {
+    // const blocks = plateToBlocks(e)
+    // console.log("BLS> ",blocks)
     let temp = JSON.stringify(e)
     updateSummary(temp)
-    setHtml(editorContents?.current?.innerHTML)
     setSummary(editorContents?.current?.innerHTML)
   }
 
   useEffect(() => {
-    setHtml(editorContents?.current?.innerHTML)
     setSummary(editorContents?.current?.innerHTML)
   },[])
 

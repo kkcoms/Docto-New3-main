@@ -54,7 +54,12 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   } = useContext(TranscriptionContext);
 
 
-  const { current, setCurrentNote } = useContext(NotesContext) as INotesContext
+  const { current, setCurrentNote, setDocumentId } = useContext(NotesContext) as INotesContext
+
+  useEffect(() => {
+    setDocumentId(params.documentId)
+  }, [])
+
   const [document, setDocument] = useState<Doc<"documents"> | null>(null)
   let _document = useQuery(api.documents.getById, current === null || current._id !== params.documentId ? {
     documentId: params.documentId
@@ -90,11 +95,9 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
           setIsTranscribed(true);
         })
       }
-    }
+    } else clearFinalTranscriptions()
 
-    if (document.audioFileUrl) {
-      setAudioFileUrl(document.audioFileUrl);
-    }
+    document?.audioFileUrl ? setAudioFileUrl(document.audioFileUrl) : setAudioFileUrl("")
 
     setSummarizationResult(document.summarizationResult ? document.summarizationResult : "");
 
