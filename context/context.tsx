@@ -3,7 +3,7 @@
 import {createContext, FC, ReactNode, useState} from "react";
 import {Doc} from "@/convex/_generated/dataModel";
 
-export interface INotesContext {
+export interface IGeneralContext {
   current: Doc<"documents"> | null
   setCurrentNote: (current: Doc<"documents">) => void
 
@@ -14,27 +14,48 @@ export interface INotesContext {
   documentId: string | null
 
   setDocumentId: (doc: string) => void
+
+  editorBridge: string | null
+  setEditorBridge: (value: string) => void
+
 }
-export const NotesContext = createContext<INotesContext | null>(null)
+export const GeneralContext = createContext<IGeneralContext | null>(null)
 
 const ContextProvider: FC<{children: ReactNode}> = ({children}) => {
   const [current, setCurrent] = useState<Doc<"documents"> | null>(null)
   const [summary, setSummaryState] = useState<string | null>(null)
   const [documentId, setDocument] = useState<string | null>(null)
+  const [bridge, setBridge] = useState<string | null>(null)
 
   const setCurrentNote = (_note: Doc<"documents">) => {
     setCurrent(_note);
   }
 
+  const setEditorBridge = (value: string) => {
+    setBridge(value)
+  }
+
   const setDocumentId = (doc: string) => {
+    console.log(doc)
     setDocument(doc)
   }
   const setSummary = (summary: string) => {
     setSummaryState(summary)
   }
-  return <NotesContext.Provider value={{setDocumentId,documentId,current, setCurrentNote, summary, setSummary}}>
+  return <GeneralContext.Provider value={
+    {
+      editorBridge: bridge,
+      setEditorBridge,
+      setDocumentId,
+      documentId,
+      current,
+      setCurrentNote,
+      summary,
+      setSummary
+    }
+  }>
             {children}
-        </NotesContext.Provider>
+        </GeneralContext.Provider>
 }
 
 export default ContextProvider;

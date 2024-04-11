@@ -14,7 +14,7 @@ import { inputVariants } from './input';
 import {api} from "@/convex/_generated/api";
 import {useMutation} from "convex/react";
 import {Id} from "@/convex/_generated/dataModel";
-import {INotesContext, NotesContext} from "@/context/context";
+import {IGeneralContext, GeneralContext} from "@/context/context";
 
 export function CommentCreateForm() {
   const myUserId = useCommentsSelectors().myUserId();
@@ -23,7 +23,7 @@ export function CommentCreateForm() {
 
   const comment = useCommentsSelectors().comments()
 
-  const { documentId } = useContext(NotesContext) as INotesContext
+  const { documentId } = useContext(GeneralContext) as IGeneralContext
 
 
   useEffect(() => {

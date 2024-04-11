@@ -19,9 +19,7 @@ import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import { useRouter } from 'next/navigation';
 import { PlateEditor } from "@/app/(main)/_components/summary-editor";
-import {INotesContext, NotesContext} from "@/context/context";
-import {ConvexClient} from "convex/browser";
-import Summarized from "@/components/summarized";
+import {IGeneralContext, GeneralContext} from "@/context/context";
 import {PlateController} from "@udecode/plate";
 
 interface DocumentIdPageProps {
@@ -54,7 +52,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   } = useContext(TranscriptionContext);
 
 
-  const { current, setCurrentNote, setDocumentId } = useContext(NotesContext) as INotesContext
+  const { current, setCurrentNote, setDocumentId } = useContext(GeneralContext) as IGeneralContext
 
   useEffect(() => {
     setDocumentId(params.documentId)

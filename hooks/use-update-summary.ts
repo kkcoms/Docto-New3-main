@@ -1,6 +1,8 @@
 import {useMutation} from "convex/react";
 import {api} from "@/convex/_generated/api";
 import {Id} from "@/convex/_generated/dataModel";
+import {useContext} from "react";
+import {GeneralContext, IGeneralContext} from "@/context/context";
 
 type UseUpdateSummary = (text: string) => void
 
@@ -12,6 +14,7 @@ const useUpdateSummary = (id: string) : UseUpdateSummary => {
   let cached : string = ""
   const updateDocument = useMutation(api.documents.update);
   return async (text) => {
+
     const difference = characterDifference(text, cached)
 
     if (difference < 5)

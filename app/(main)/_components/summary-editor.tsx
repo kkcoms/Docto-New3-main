@@ -32,7 +32,7 @@ import {
   createHorizontalRulePlugin,
   ELEMENT_HR,
 } from "@udecode/plate-horizontal-rule";
-// import { createLinkPlugin, ELEMENT_LINK } from '@udecodbe/plate-link';
+import * as md from '@udecode/plate-serializer-md';
 import {
   createImagePlugin,
   ELEMENT_IMAGE,
@@ -109,7 +109,7 @@ import {
 } from "@udecode/plate-comments";
 import { createDeserializeDocxPlugin } from "@udecode/plate-serializer-docx";
 import { createDeserializeCsvPlugin } from "@udecode/plate-serializer-csv";
-import { createDeserializeMdPlugin } from "@udecode/plate-serializer-md";
+import {createDeserializeMdPlugin, deserializeMd} from "@udecode/plate-serializer-md";
 import { createJuicePlugin } from "@udecode/plate-juice";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -161,9 +161,11 @@ import {Id} from "@/convex/_generated/dataModel";
 import {serializeHtml} from "@udecode/plate-serializer-html";
 import {createPlateEditor, createPluginFactory, useEditorState} from "@udecode/plate";
 import {serializeHTMLFromNodes} from "@udecode/plate-html-serializer";
-import {INotesContext, NotesContext} from "@/context/context";
+import {IGeneralContext, GeneralContext} from "@/context/context";
 import usePlateSerializer from "@/hooks/use-plate-serializer";
 import {useRouter} from "next/router";
+import {useBridge} from "@/hooks/use-bridge";
+import {BridgeContext, IBridgeContext} from "@/context/bridgeContext";
 
 // const createCustomPlugin = createPluginFactory({
 //   key: "KEY_CUSTOM",
@@ -401,9 +403,10 @@ export function PlateEditor() {
     summaryNote,
   } = useContext(TranscriptionContext);
 
-  const [ plateToBlocks ] = usePlateSerializer()
+  const setBridge = useBridge("A")
   const [comments, setComments] = useState<any>()
-  const { setSummary, documentId } = useContext(NotesContext) as INotesContext
+  const { setSummary, documentId } = useContext(GeneralContext) as IGeneralContext
+  const { bridgeB, updateA, updateB } = useContext(BridgeContext) as IBridgeContext
 
   let commentData = useQuery(api.comments.getById, {
     documentId: documentId as Id<"documents">
@@ -422,16 +425,40 @@ export function PlateEditor() {
 
   const editor = useEditorState()
   const handleUpdate = (e: Value) => {
-    // const blocks = plateToBlocks(e)
-    // console.log("BLS> ",blocks)
+    console.log(e)
     let temp = JSON.stringify(e)
     updateSummary(temp)
-    setSummary(editorContents?.current?.innerHTML)
+    setBridge(temp)
   }
 
   useEffect(() => {
-    setSummary(editorContents?.current?.innerHTML)
-  },[])
+    if (!bridgeB || !updateB)
+      return
+
+    let test = [
+      {
+        "id": 0,
+        "type": "p",
+        "children": [
+          {
+            "text": "t"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "type": "p",
+        "children": [
+          {
+            "text": "t"
+          }
+        ]
+      }
+    ]
+    let data : Value = JSON.parse(bridgeB)
+    console.log(data)
+    editor.insertFragment(test)
+  },[bridgeB])
 
 
   const editorContents = useRef<any>()

@@ -1,12 +1,23 @@
 "use client";
-import React, { useContext, useEffect } from "react";
+import React, {ChangeEvent, useCallback, useContext, useEffect} from "react";
 import { useTheme } from "next-themes";
-import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
-import { BlockNoteView, useBlockNote } from "@blocknote/react";
+import {
+  BlockNoteView,
+  DefaultReactSuggestionItem,
+  getDefaultReactSlashMenuItems,
+  useCreateBlockNote
+} from "@blocknote/react";
 import "@blocknote/core/style.css";
 import { useEdgeStore } from "@/lib/edgestore";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
-import {INotesContext, NotesContext} from "@/context/context";
+import {IGeneralContext, GeneralContext} from "@/context/context";
+import {Value} from "@udecode/plate-common";
+import {BlockNoteEditor, PartialBlock} from "@blocknote/core";
+import usePlateSerializer from "@/hooks/use-plate-serializer";
+import "@blocknote/react/style.css";
+import {difference} from "lodash";
+import {useBridge} from "@/hooks/use-bridge";
+import {BridgeContext, IBridgeContext} from "@/context/bridgeContext";
 
 interface EditorProps {
   onChange: (value: string) => void;
@@ -14,32 +25,55 @@ interface EditorProps {
   editable?: boolean;
 }
 
+function insertHelloWorldItem(editor: BlockNoteEditor) {
+  return undefined;
+}
+
+const getCustomSlashMenuItems = (
+  editor: BlockNoteEditor
+): DefaultReactSuggestionItem[] => [
+  ...getDefaultReactSlashMenuItems(editor),
+];
 const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
   const { resolvedTheme } = useTheme();
-  const { edgestore } = useEdgeStore();
-  const { currentSessionId } = useContext(TranscriptionContext);
 
-  let initialBlocks: PartialBlock[] | undefined;
-  let isError = false;
+  const {plateToBlock, blocksToPlate} = usePlateSerializer()
 
-  const { summary } = useContext(NotesContext) as INotesContext
+  const { bridgeA, updateB, updateA } = useContext(BridgeContext) as IBridgeContext
 
-  const editor = useBlockNote({
-    editable,
-    onEditorContentChange: (editor) => {
-      console.log(editor.topLevelBlocks)
-      onChange(JSON.stringify(editor.topLevelBlocks, null, 2));
-    },
-    uploadFile: async (file: File) => {
-      const response = await edgestore.publicFiles.upload({ file });
-      return response.url;
-    },
-  });
+  const setBridge = useBridge("B")
 
+  const editor = useCreateBlockNote();
+
+  let update = true
+  useEffect(() => {
+    // console.log("B:", bridgeA, updateB, updateA)
+    // if (!bridgeA || !updateA)
+    //   return
+    //
+    // const _data : Value = JSON.parse(bridgeA as string)
+    // const deserialized = plateToBlock(_data)
+    //
+    // editor.replaceBlocks(editor.document, deserialized)
+    // setTimeout(() => {
+    //   update = false
+    // }, 300)
+  }, [bridgeA])
+
+  editor.onChange(() => {
+
+    const blocks = blocksToPlate(editor.document)
+    const data = JSON.stringify(blocks)
+    setBridge(data)
+  })
 
   return (
     <div>
-      <BlockNoteView editor={editor} theme={resolvedTheme === "dark" ? "dark" : "light"} />
+      <BlockNoteView editor={editor}
+                     onChange={async () => {
+                       const markdown = await editor.blocksToMarkdownLossy()
+                     }}
+                     theme={resolvedTheme === "dark" ? "dark" : "light"} />
     </div>
   );
 };

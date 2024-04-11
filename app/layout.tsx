@@ -14,6 +14,7 @@ const raleway = Raleway({
 })
 
 import './globals.css'
+import BridgeContext from "@/context/bridgeContext";
 
 export const metadata: Metadata = {
   title: 'Docto',
@@ -52,11 +53,13 @@ export default function RootLayout({
               disableTransitionOnChange
               storageKey="Docto-theme-2"
             >
-              <ContextProvider>
-                <Toaster position="bottom-right" />
-                <ModalProvider />
-                {children}
-              </ContextProvider>
+              <BridgeContext>
+                <ContextProvider>
+                  <Toaster position="bottom-right" />
+                  <ModalProvider />
+                  {children}
+                </ContextProvider>
+              </BridgeContext>
             </ThemeProvider>
           </EdgeStoreProvider>
         </ConvexClientProvider>

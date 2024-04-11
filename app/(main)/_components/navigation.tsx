@@ -31,7 +31,7 @@ import { DocumentList } from "./document-list";
 import { TrashBox } from "./trash-box";
 import { Navbar } from "./navbar";
 import Notes from "@/app/(notes)/_components/notes";
-import {INotesContext, NotesContext} from "@/context/context";
+import {IGeneralContext, GeneralContext} from "@/context/context";
 
 export const useNavigation = () => {
   const router = useRouter();
@@ -42,7 +42,7 @@ export const useNavigation = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const create = useMutation(api.documents.create);
   const createFolder = useMutation(api.folder.create);
-  const { current } = useContext(NotesContext) as INotesContext
+  const { current } = useContext(GeneralContext) as IGeneralContext
   const isResizingRef = useRef(false);
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);

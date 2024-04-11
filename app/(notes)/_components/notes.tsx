@@ -7,11 +7,11 @@ import Options from './options';
 import { api } from '@/convex/_generated/api';
 import { Id } from "@/convex/_generated/dataModel";
 import { debounce } from 'lodash';
-import {INotesContext, NotesContext} from "@/context/context";
+import {IGeneralContext, GeneralContext} from "@/context/context";
 
 const Notes = ({ folderId }: { folderId?: Id<"folder"> }) => {
 
-  const { setCurrentNote } = useContext(NotesContext) as INotesContext
+  const { setCurrentNote } = useContext(GeneralContext) as IGeneralContext
 
   const _notes = useQuery(api.note.getNotesById, { folderId });
   const [showOption, setShowOption] = useState<{ key: string; value: boolean }>();
