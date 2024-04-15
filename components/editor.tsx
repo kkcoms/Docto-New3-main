@@ -1,78 +1,77 @@
 "use client";
-import React, {ChangeEvent, useCallback, useContext, useEffect} from "react";
+import React, { useContext, useEffect } from "react";
 import { useTheme } from "next-themes";
 import {
   BlockNoteView,
-  DefaultReactSuggestionItem,
-  getDefaultReactSlashMenuItems,
   useCreateBlockNote
 } from "@blocknote/react";
 import "@blocknote/core/style.css";
-import { useEdgeStore } from "@/lib/edgestore";
-import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
-import {IGeneralContext, GeneralContext} from "@/context/context";
-import {Value} from "@udecode/plate-common";
-import {BlockNoteEditor, PartialBlock} from "@blocknote/core";
+import { Value } from "@udecode/plate-common";
+import {Block, BlockIdentifier, BlockNoteEditor, PartialBlock} from "@blocknote/core";
 import usePlateSerializer from "@/hooks/use-plate-serializer";
 import "@blocknote/react/style.css";
-import {difference} from "lodash";
-import {useBridge} from "@/hooks/use-bridge";
-import {BridgeContext, IBridgeContext} from "@/context/bridgeContext";
+import { useBridge } from "@/hooks/use-bridge";
+import { BridgeContext, IBridgeContext } from "@/context/bridgeContext";
+import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
+import useUpdateSummary from "@/hooks/use-update-summary";
+import {GeneralContext, IGeneralContext} from "@/context/context";
 
 interface EditorProps {
-  onChange: (value: string) => void;
-  initialContent?: string;
   editable?: boolean;
 }
 
-function insertHelloWorldItem(editor: BlockNoteEditor) {
-  return undefined;
-}
-
-const getCustomSlashMenuItems = (
-  editor: BlockNoteEditor
-): DefaultReactSuggestionItem[] => [
-  ...getDefaultReactSlashMenuItems(editor),
-];
-const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
+const Editor = ({ editable = true }: EditorProps) => {
   const { resolvedTheme } = useTheme();
 
-  const {plateToBlock, blocksToPlate} = usePlateSerializer()
+  const {
+    summarizationResult, transcriptionCompleted
+  } = useContext(TranscriptionContext);
 
-  const { bridgeA, updateB, updateA } = useContext(BridgeContext) as IBridgeContext
+  const { documentId } = useContext(GeneralContext) as IGeneralContext
 
-  const setBridge = useBridge("B")
+  const { plateToBlock, blocksToPlate } = usePlateSerializer()
 
-  const editor = useCreateBlockNote();
+  const { updateSummarizationResult } = useUpdateSummary(documentId as string)
 
-  let update = true
+  const getSummaryData = () => {
+    const initial : any = summarizationResult ? JSON.parse(summarizationResult) : undefined
+
+    let initialData : Block[] | undefined = plateToBlock(initial)
+
+    if (Array.isArray(initialData) && initialData.length === 0)
+      initialData = undefined
+
+    return initialData
+  }
+
+  const initial = getSummaryData()
+
+  const editor = useCreateBlockNote({ initialContent: initial });
+
   useEffect(() => {
-    // console.log("B:", bridgeA, updateB, updateA)
-    // if (!bridgeA || !updateA)
-    //   return
-    //
-    // const _data : Value = JSON.parse(bridgeA as string)
-    // const deserialized = plateToBlock(_data)
-    //
-    // editor.replaceBlocks(editor.document, deserialized)
-    // setTimeout(() => {
-    //   update = false
-    // }, 300)
-  }, [bridgeA])
+    if (!summarizationResult || !transcriptionCompleted)
+      return
+
+    const data = getSummaryData()
+    if (data)
+      editor.replaceBlocks(editor.document, data)
+
+  }, [summarizationResult])
 
   editor.onChange(() => {
+    if (editor.isFocused() === false)
+      return
 
     const blocks = blocksToPlate(editor.document)
     const data = JSON.stringify(blocks)
-    setBridge(data)
+
+    updateSummarizationResult(data);
   })
 
   return (
     <div>
       <BlockNoteView editor={editor}
-                     onChange={async () => {
-                       const markdown = await editor.blocksToMarkdownLossy()
-                     }}
+                     editable={editable}
                      theme={resolvedTheme === "dark" ? "dark" : "light"} />
     </div>
   );

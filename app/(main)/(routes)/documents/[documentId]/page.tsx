@@ -82,8 +82,20 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   }, [params.documentId]);
 
   useEffect(() => {
-    if (!document)
+
+    console.log("DOC >>> ",document)
+    if (!document) {
+      console.log("OUT")
       return
+    }
+
+    document?.audioFileUrl ? setAudioFileUrl(document.audioFileUrl) : setAudioFileUrl("")
+
+    document.summarizationResult ? setSummarizationResult(document.summarizationResult) : setSummarizationResult("");
+
+    document.summaryNote ? setSummaryNote(document.summaryNote) : setSummaryNote("");
+
+    console.log(document.summarizationResult, document.summaryNote)
 
     if (document.content){
       const content = JSON.parse(document.content);
@@ -94,12 +106,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
         })
       }
     } else clearFinalTranscriptions()
-
-    document?.audioFileUrl ? setAudioFileUrl(document.audioFileUrl) : setAudioFileUrl("")
-
-    setSummarizationResult(document.summarizationResult ? document.summarizationResult : "");
-
-    setSummaryNote(document.summaryNote ? document.summaryNote : "");
 
   }, [document]);
 
@@ -141,8 +147,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
             <Toolbar initialData={document} duration={duration} />
             <Tabs>
             <TabList className="react-tabs__tab-list2">
-                <Tab selectedClassName="TabsTrigger ">
-                  <div className="text-sm font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF]">Transcription</div>
+                <Tab selectedClassName="TabsTrigger">
+                  <div className="text-sm font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF]">
+                    Transcription
+                  </div>
                 </Tab>
                 <Tab selectedClassName="TabsTrigger bg-transparent">
                   <div className="text-sm font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF]">Summary</div>

@@ -403,10 +403,8 @@ export function PlateEditor() {
     summaryNote,
   } = useContext(TranscriptionContext);
 
-  const setBridge = useBridge("A")
   const [comments, setComments] = useState<any>()
   const { setSummary, documentId } = useContext(GeneralContext) as IGeneralContext
-  const { bridgeB, updateA, updateB } = useContext(BridgeContext) as IBridgeContext
 
   let commentData = useQuery(api.comments.getById, {
     documentId: documentId as Id<"documents">
@@ -418,50 +416,16 @@ export function PlateEditor() {
     }
   }, [commentData])
 
-  const updateSummary = useUpdateSummary(documentId as string)
+  const { updateSummaryNote } = useUpdateSummary(documentId as string)
   const stringToPlate = useStringToPlate()
 
   const initial : any = summaryNote ? JSON.parse(summaryNote) : undefined
 
-  const editor = useEditorState()
   const handleUpdate = (e: Value) => {
-    console.log(e)
+    console.log("handleUpdate: ", e)
     let temp = JSON.stringify(e)
-    updateSummary(temp)
-    setBridge(temp)
+    updateSummaryNote(temp)
   }
-
-  useEffect(() => {
-    if (!bridgeB || !updateB)
-      return
-
-    let test = [
-      {
-        "id": 0,
-        "type": "p",
-        "children": [
-          {
-            "text": "t"
-          }
-        ]
-      },
-      {
-        "id": 1,
-        "type": "p",
-        "children": [
-          {
-            "text": "t"
-          }
-        ]
-      }
-    ]
-    let data : Value = JSON.parse(bridgeB)
-    console.log(data)
-    editor.insertFragment(test)
-  },[bridgeB])
-
-
-  const editorContents = useRef<any>()
 
   return (
     <TooltipProvider
@@ -472,12 +436,7 @@ export function PlateEditor() {
               <FixedToolbar>
                 <FixedToolbarButtons />
               </FixedToolbar>
-
-              <Editor renderEditable={(children) => (
-                <div ref={editorContents}>
-                  {children}
-                </div>
-              )} />
+              <Editor />
               <FloatingToolbar>
                 <FloatingToolbarButtons />
               </FloatingToolbar>

@@ -21,14 +21,14 @@ const setBlockType = (obj: any, type: string) => {
 
 const setPlateType = (obj: any, type: string, props?: any) => {
   const level = props?.level
-  if (type === "paragraph"){
+  if (type === "paragraph") {
     obj.type = "p"
-  } else if (type === "heading" && level === 1){
+  } else if (type === "heading" && level === 1) {
     obj.type = "h1"
-  } else if (type === "heading" && level === 2){
+  } else if (type === "heading" && level === 2) {
     obj.type = "h2"
   }
-  else if (type === "heading" && level === 3){
+  else if (type === "heading"){
     obj.type = "h3"
   }
 
@@ -44,10 +44,9 @@ const usePlateSerializer = () => {
         children: []
       }
       obj = setPlateType(obj, block.type, block.props)
-
       if (block.content) {
 
-        if (Array.isArray(block.content)){
+        if (Array.isArray(block.content)) {
           for (const content of block.content) {
             if (content.type === "text")
               obj.children.push({
@@ -57,12 +56,18 @@ const usePlateSerializer = () => {
         }
       }
 
+      if (obj.children.length === 0)
+        continue
+
       values.push(obj)
     }
     return values
   }
   const plateToBlock = (plate: Value) : Block[] => {
     const blocks : Block[] = []
+    if (!plate)
+      return blocks
+
     let base : Block = {
       id: "0",
       type: "paragraph",
@@ -75,7 +80,7 @@ const usePlateSerializer = () => {
       children: []
     }
 
-    for (const element of plate){
+    for (const element of plate) {
       let block = JSON.parse(JSON.stringify(base))
       block.id = element.id as string
 

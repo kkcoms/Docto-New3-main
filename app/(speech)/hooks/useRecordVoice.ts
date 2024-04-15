@@ -65,6 +65,7 @@ export const useRecordVoice = (
     setAudioFileUrl,
     setSummarizationResult,
     setSummaryNote,
+    setTranscriptionCompleted
   } = useContext(TranscriptionContext);
 
   const sendSummaryForBlocknote = async (summary: string) => {
@@ -294,6 +295,7 @@ export const useRecordVoice = (
 
         _summary = JSON.stringify(_summary)
 
+        setTranscriptionCompleted(true)
         setSummarizationResult(_summary);
         setSummaryNote(_summary);
 

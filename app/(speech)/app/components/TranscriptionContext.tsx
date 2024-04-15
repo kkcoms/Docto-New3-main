@@ -25,6 +25,10 @@ interface TranscriptionContextType {
   setAudioCurrentTime: (time: number) => void;
   isDisabledRecordButton: boolean;
   setisDisabledRecordButton: (isDisabledRecordButton: boolean) => void;
+
+  transcriptionCompleted: boolean
+
+  setTranscriptionCompleted: (value: boolean) => void
 }
 
 const defaultState: TranscriptionContextType = {
@@ -49,6 +53,8 @@ const defaultState: TranscriptionContextType = {
   setAudioCurrentTime: () => { },
   isDisabledRecordButton: false,
   setisDisabledRecordButton: () => { },
+  transcriptionCompleted: false,
+  setTranscriptionCompleted: () => {}
 };
 
 const TranscriptionContext =
@@ -73,6 +79,7 @@ export const TranscriptionProvider = ({
   const [audioFileUrl, setAudioFileUrl] = useState("");
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [isDisabledRecordButton, setisDisabledRecordButton] = useState(false);
+  const [transcriptionCompleted, setTranscriptionCompleted] = useState(false)
 
   const generateNewSessionId = () => {
     const newSessionId = uuidv4();
@@ -112,6 +119,8 @@ export const TranscriptionProvider = ({
     setAudioCurrentTime,
     setisDisabledRecordButton,
     isDisabledRecordButton,
+    transcriptionCompleted,
+    setTranscriptionCompleted
   };
 
   return (
