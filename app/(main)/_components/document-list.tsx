@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import {useContext, useState} from "react";
 import { useQuery } from "convex/react";
 import { ChevronDown, ChevronRight, FileIcon, Folder } from "lucide-react";
 
@@ -13,6 +13,7 @@ import { Item } from "./item";
 import Options from "@/app/(notes)/_components/options";
 import Notes from "@/app/(notes)/_components/notes";
 import { Skeleton } from "@/components/ui/skeleton";
+import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 
 interface DocumentListProps {
   parentDocumentId?: Id<"documents">;
@@ -24,7 +25,7 @@ export const DocumentList = ({
   parentDocumentId,
   level = 0
 }: DocumentListProps) => {
-  
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const onExpand = (documentId: string) => {
     setExpanded(prevExpanded => ({
@@ -64,8 +65,8 @@ export const DocumentList = ({
 
 };
 const FolderItem = ({folderId, foldertitle, isExpanded, onExpand}:{folderId: Id<"folder">, foldertitle: string, isExpanded: boolean, onExpand?: () => void}) => {
-    const [shownotes, setShownotes] = useState<boolean>(isExpanded)
-    const [showOption, setShowOption] = useState<boolean>(false)
+  const [shownotes, setShownotes] = useState<boolean>(isExpanded)
+  const [showOption, setShowOption] = useState<boolean>(false)
     const notes = useQuery(api.note.getNotesById,{
         folderId
     });
@@ -81,7 +82,7 @@ const FolderItem = ({folderId, foldertitle, isExpanded, onExpand}:{folderId: Id<
         )
     return(
         <div>
-            <div onMouseEnter={() => setShowOption(true)} onMouseLeave={() => setShowOption(false)} className='flex items-center justify-between py-[1px] hover:bg-primary/5 px-3 cursor-pointer'>   
+            <div onMouseEnter={() => setShowOption(true)} onMouseLeave={() => setShowOption(false)} className='flex items-center justify-between py-[1px] hover:bg-primary/5 px-3 cursor-pointer'>
                 <div onClick={() => {setShownotes(!shownotes); onExpand?.(); router.push(`/folder/${folderId}`)}}  className='flex items-center space-x-1'>
                     <ChevronComp folderId={folderId} isCollapsed={shownotes}/>
                     <Folder size={18} className="text-muted-foreground" />
@@ -125,7 +126,7 @@ const FolderItem = ({folderId, foldertitle, isExpanded, onExpand}:{folderId: Id<
 
       return(
         <>
-          {!isCollapsed 
+          {!isCollapsed
             ? <ChevronRight size={16} className="text-muted-foreground" />
             : <ChevronDown size={16} className="text-muted-foreground" />
           }

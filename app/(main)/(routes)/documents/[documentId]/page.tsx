@@ -46,8 +46,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     clearFinalTranscriptions,
     setLiveTranscription,
     setSummarizationResult,
-    summarizationResult,
-    summaryNote,
     setSummaryNote
   } = useContext(TranscriptionContext);
 
@@ -63,7 +61,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     documentId: params.documentId
   } : "skip")
 
-  console.log(audioFileUrl)
   useEffect(() => {
     if (_document)
       setDocument(_document);
@@ -83,9 +80,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
   useEffect(() => {
 
-    console.log("DOC >>> ",document)
     if (!document) {
-      console.log("OUT")
       return
     }
 
@@ -94,8 +89,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     document.summarizationResult ? setSummarizationResult(document.summarizationResult) : setSummarizationResult("");
 
     document.summaryNote ? setSummaryNote(document.summaryNote) : setSummaryNote("");
-
-    console.log(document.summarizationResult, document.summaryNote)
 
     if (document.content){
       const content = JSON.parse(document.content);

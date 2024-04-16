@@ -8,6 +8,7 @@ import { api } from '@/convex/_generated/api';
 import { Id } from "@/convex/_generated/dataModel";
 import { debounce } from 'lodash';
 import {IGeneralContext, GeneralContext} from "@/context/context";
+import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 
 const Notes = ({ folderId }: { folderId?: Id<"folder"> }) => {
 

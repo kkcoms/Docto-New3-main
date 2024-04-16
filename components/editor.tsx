@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect } from "react";
+import React, {useContext, useEffect, useState} from "react";
 import { useTheme } from "next-themes";
 import {
   BlockNoteView,
@@ -15,6 +15,7 @@ import { BridgeContext, IBridgeContext } from "@/context/bridgeContext";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 import useUpdateSummary from "@/hooks/use-update-summary";
 import {GeneralContext, IGeneralContext} from "@/context/context";
+import {initial} from "lodash";
 
 interface EditorProps {
   editable?: boolean;
@@ -22,9 +23,8 @@ interface EditorProps {
 
 const Editor = ({ editable = true }: EditorProps) => {
   const { resolvedTheme } = useTheme();
-
   const {
-    summarizationResult, transcriptionCompleted
+    summarizationResult
   } = useContext(TranscriptionContext);
 
   const { documentId } = useContext(GeneralContext) as IGeneralContext
@@ -33,8 +33,8 @@ const Editor = ({ editable = true }: EditorProps) => {
 
   const { updateSummarizationResult } = useUpdateSummary(documentId as string)
 
-  const getSummaryData = () => {
-    const initial : any = summarizationResult ? JSON.parse(summarizationResult) : undefined
+  const getSummaryData = (data: string | undefined) => {
+    const initial : any = data ? JSON.parse(data) : undefined
 
     let initialData : Block[] | undefined = plateToBlock(initial)
 
@@ -44,17 +44,13 @@ const Editor = ({ editable = true }: EditorProps) => {
     return initialData
   }
 
-  const initial = getSummaryData()
-
-  const editor = useCreateBlockNote({ initialContent: initial });
+  const editor = useCreateBlockNote();
 
   useEffect(() => {
-    if (!summarizationResult || !transcriptionCompleted)
-      return
-
-    const data = getSummaryData()
-    if (data)
-      editor.replaceBlocks(editor.document, data)
+    setTimeout(() => {
+      const data = getSummaryData(summarizationResult)
+      editor.replaceBlocks(editor.document, data ? data : [])
+    }, 100)
 
   }, [summarizationResult])
 

@@ -19,22 +19,16 @@ interface DetailsSectionProps {
 }
 
 const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectionProps) => {
+
   const Editor = useMemo(
     () => dynamic(() => import("@/components/editor"), { ssr: false }),
     []
   );
 
-  const { summaryNote } = useContext(TranscriptionContext);
-
-  const updateSummary = useMutation(api.documents.saveSummaryNote)
-  const onChangeEditor = (content: string) => {
-
-  };
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
-  // const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
   const collapse = () => {
     if (sidebarRef.current) {
@@ -110,7 +104,7 @@ const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectio
           <div>
             <Tabs.Content className="TabsContent" value="Insights">
               <div className="py-3">
-                <Editor onChange={onChangeEditor} initialContent={summaryNote} />
+                <Editor editable={true} />
               </div>
             </Tabs.Content>
 
