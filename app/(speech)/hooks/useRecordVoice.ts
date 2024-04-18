@@ -1,3 +1,4 @@
+//new "fixed"
 import { useEffect, useState, useCallback, useContext, useRef } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import {
@@ -8,12 +9,11 @@ import {
 import { useQueue } from "@uidotdev/usehooks";
 import TranscriptionContext from "../app/components/TranscriptionContext";
 import {useAction, useMutation} from "convex/react";
-import {api, fullApi} from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Transcription } from "@/app/types";
 import { formatTimestamp } from "@/app/(speech)/utils";
 import { MediaRecorder, register } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
-import * as lamejs from '@breezystack/lamejs';
 import useSummarize from "@/hooks/use-summarize";
 import useStringToPlate from "@/hooks/use-string-to-plate";
 
@@ -28,6 +28,7 @@ async function connectWavEncoder() {
   await register(await connect());
 }
 
+
 let connected = false
 let connection : LiveClient | null = null
 let listening = false
@@ -35,6 +36,7 @@ let encoder: void | null = null
 let started = false;
 let temp_timer = 0
 let previous_timer = 0
+
 export const useRecordVoice = (
   documentId: Id<"documents">,
   onTranscriptionComplete: any
@@ -48,11 +50,10 @@ export const useRecordVoice = (
   const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
   const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio);
   const updateDocument = useMutation(api.documents.update);
-  let getMP3File = useAction(api.audio.uploadNoteAudio)
   const updateSummaryNote = useMutation(api.documents.saveSummaryNote);
   const summarize = useSummarize()
+  let getMP3File = useAction(api.audio.uploadNoteAudio)
   const stringToPlate = useStringToPlate()
-
   const {
     setLiveTranscription,
     addFinalTranscription,
@@ -60,12 +61,10 @@ export const useRecordVoice = (
     generateNewSessionId,
     clearFinalTranscriptions,
     setIsTranscribed,
-    isDisabledRecordButton,
     setisDisabledRecordButton,
     setAudioFileUrl,
     setSummarizationResult,
     setSummaryNote,
-    setTranscriptionCompleted
   } = useContext(TranscriptionContext);
 
   const sendSummaryForBlocknote = async (summary: string) => {
@@ -101,6 +100,7 @@ export const useRecordVoice = (
     );
 
     connection = deepgram.listen.live(model);
+    let keepAliveInterval: NodeJS.Timeout | null = null;
 
     connection.on(LiveTranscriptionEvents.Open, () => {
       connected = true;
@@ -115,6 +115,13 @@ export const useRecordVoice = (
       connected = false
       previous_timer += temp_timer
       temp_timer = 0
+
+      if (micOpen) {
+        retryTimeout = setTimeout(() => {
+          console.log("Retrying the connection...");
+          startRecording();
+        }, 100);
+      }
     });
 
     connection.on(LiveTranscriptionEvents.Error, (error) => {
@@ -207,14 +214,14 @@ export const useRecordVoice = (
   const pauseRecording = useCallback(() => {
     if (microphone && userMedia && microphone.state === "recording") {
       microphone.pause();
-      const keepAliveInterval = () => setInterval(() => {
-        if (listening) {
-          const silentBuffer = new ArrayBuffer(1024);
-          connection?.send(silentBuffer);
-          console.log("sending silent audio data");
-        }
-        keepAliveInterval()
-      }, 2000);
+      // const keepAliveInterval = () => setInterval(() => {
+      //   if (listening) {
+      //     const silentBuffer = new ArrayBuffer(1024);
+      //     connection?.send(silentBuffer);
+      //     console.log("sending silent audio data");
+      //   }
+      //   keepAliveInterval()
+      // }, 2000);
       console.log("pausing", connected, connection)
     }
   }, [microphone, userMedia]);
@@ -252,8 +259,6 @@ export const useRecordVoice = (
           documentId: documentId,
           data: wavBuffer
         })
-
-        console.log(">>>>> data: ", upload)
 
         if (!upload?.success)
           return
@@ -295,7 +300,6 @@ export const useRecordVoice = (
 
         _summary = JSON.stringify(_summary)
 
-        setTranscriptionCompleted(true)
         setSummarizationResult(_summary);
         setSummaryNote(_summary);
 
@@ -344,7 +348,7 @@ export const useRecordVoice = (
         const waiting = setTimeout(() => {
           clearTimeout(waiting);
           setProcessing(false);
-        }, 1000);
+        }, 250);
       }
     };
 
