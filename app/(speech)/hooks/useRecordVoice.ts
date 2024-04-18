@@ -253,24 +253,43 @@ export const useRecordVoice = (
 
       console.log("useRecordVoice.js - MediaRecorder stopped");
       try {
+        const buffer = await wavBlob.arrayBuffer()
 
-        const wavBuffer = await wavBlob.arrayBuffer()
-        const upload = await getMP3File({
-          documentId: documentId,
-          data: wavBuffer
-        })
+        const mp3 = await fetch("/api/compressMp3", {
+          method: "POST",
+          body: buffer,
+        }).then(r => r.arrayBuffer())
 
-        if (!upload?.success)
+        const mp3Blob = new Blob([mp3])
+
+        const postUrl = await generateUploadUrl();
+        console.log("is transcribing audio file, postUrl is", postUrl);
+
+        const result = await fetch(postUrl, {
+          method: "POST",
+          headers: { "Content-Type": "audio/mp3" },
+          body: mp3Blob,
+        });
+        const audioFileRef = await result.json();
+
+        const uploadResult = await updateNoteWithAudio({
+          noteId: documentId,
+          audioFileRef: audioFileRef.storageId,
+          storageId: audioFileRef.storageId,
+        });
+
+        if (!uploadResult?.success)
           return
 
-        setAudioFileUrl(upload.fileUrl);
+        setAudioFileUrl(uploadResult.fileUrl);
+        debugger
         const transcribeResponse = await fetch("/api/deepgram/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            url: upload.fileUrl,
+            url: uploadResult.fileUrl,
           }),
         });
 
