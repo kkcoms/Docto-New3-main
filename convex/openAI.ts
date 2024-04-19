@@ -14,14 +14,12 @@ export const summarize = action({
       const messages = [
         {
           role: "system",
-          content: `
-            Create a clinical note only based on what is written of the clinical encounter with at least these 
-            sections Chief Complaint,Past Medical History, Allergies, Medications, Assessment, Plan and Suggestions. 
-            It must be short an concise but descriptive with paragraphs where needed. Do not provide a tittle 
-            heading for the note just for the sections. Only focus on the information that is clinically relevant. 
-            It must be succinct when possible. Format: Array of objects with 2 attributes: 
-            section (plain text) and content
-          `
+          content: `Output Format: Array of objects with 2 attributes: section (plain text) and content, 
+          example: [{"section": "summary", "content": "No clinically relevant information provided"}]. 
+          Create a clinical note only based on what is written of the clinical encounter. 
+          If there's no clinically relevant information return a short summary of the user content. 
+          Otherwise the output should have these sections when the information is provided Chief Complaint,
+          Past Medical History, Allergies, Medications, Assessment, Plan and Suggestions. It must be descriptive.`
         },
         {
           role: "user",
@@ -51,7 +49,7 @@ const chatCompletions = (messages: {role: string, content: string}[]) => {
       },
       body: JSON.stringify({
         "model": "gpt-3.5-turbo-16k",
-        "temperature": 0.2,
+        "temperature": 0,
         "messages": messages
       })
     }).then(response => response.json())

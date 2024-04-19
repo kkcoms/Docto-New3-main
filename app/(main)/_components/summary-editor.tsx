@@ -164,22 +164,7 @@ import {serializeHTMLFromNodes} from "@udecode/plate-html-serializer";
 import {IGeneralContext, GeneralContext} from "@/context/context";
 import usePlateSerializer from "@/hooks/use-plate-serializer";
 import {useRouter} from "next/router";
-import {useBridge} from "@/hooks/use-bridge";
-import {BridgeContext, IBridgeContext} from "@/context/bridgeContext";
 
-// const createCustomPlugin = createPluginFactory({
-//   key: "KEY_CUSTOM",
-//   handlers: {
-//     onChange: (editor) => (value) => {
-//       // @ts-ignore
-//       const html = serializeHTMLFromNodes(editor,{
-//         nodes: value
-//       })
-//
-//       console.log(html)
-//     }
-//   }
-// })
 const plugins = createPlugins(
   [
 
@@ -188,9 +173,6 @@ const plugins = createPlugins(
     createBlockquotePlugin(),
     createCodeBlockPlugin(),
     createHorizontalRulePlugin(),
-    // createLinkPlugin({
-    //   renderAfterEditable: LinkFloatingToolbar as RenderAfterEditable,
-    // }),
     createImagePlugin(),
     createMediaEmbedPlugin(),
     createCaptionPlugin({

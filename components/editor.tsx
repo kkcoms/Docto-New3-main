@@ -1,21 +1,17 @@
 "use client";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect } from "react";
 import { useTheme } from "next-themes";
 import {
   BlockNoteView,
   useCreateBlockNote
 } from "@blocknote/react";
 import "@blocknote/core/style.css";
-import { Value } from "@udecode/plate-common";
-import {Block, BlockIdentifier, BlockNoteEditor, PartialBlock} from "@blocknote/core";
+import { Block } from "@blocknote/core";
 import usePlateSerializer from "@/hooks/use-plate-serializer";
 import "@blocknote/react/style.css";
-import { useBridge } from "@/hooks/use-bridge";
-import { BridgeContext, IBridgeContext } from "@/context/bridgeContext";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 import useUpdateSummary from "@/hooks/use-update-summary";
 import {GeneralContext, IGeneralContext} from "@/context/context";
-import {initial} from "lodash";
 
 interface EditorProps {
   editable?: boolean;

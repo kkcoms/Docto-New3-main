@@ -50,9 +50,7 @@ export const useRecordVoice = (
   const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
   const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio);
   const updateDocument = useMutation(api.documents.update);
-  const updateSummaryNote = useMutation(api.documents.saveSummaryNote);
   const summarize = useSummarize()
-  let getMP3File = useAction(api.audio.uploadNoteAudio)
   const stringToPlate = useStringToPlate()
   const {
     setLiveTranscription,
@@ -100,7 +98,6 @@ export const useRecordVoice = (
     );
 
     connection = deepgram.listen.live(model);
-    let keepAliveInterval: NodeJS.Timeout | null = null;
 
     connection.on(LiveTranscriptionEvents.Open, () => {
       connected = true;
@@ -110,18 +107,12 @@ export const useRecordVoice = (
 
     connection.on(LiveTranscriptionEvents.Close, () => {
       console.log("connection closed");
+      connection?.finish()
       listening = false;
       connection = null
       connected = false
       previous_timer += temp_timer
       temp_timer = 0
-
-      if (micOpen) {
-        retryTimeout = setTimeout(() => {
-          console.log("Retrying the connection...");
-          startRecording();
-        }, 100);
-      }
     });
 
     connection.on(LiveTranscriptionEvents.Error, (error) => {
@@ -296,7 +287,6 @@ export const useRecordVoice = (
         const utteranceResult = await transcribeResponse.json();
         console.log("utteranceResult", utteranceResult);
 
-
         clearFinalTranscriptions();
 
         const utterances = utteranceResult.results.utterances;
@@ -310,8 +300,7 @@ export const useRecordVoice = (
 
         if (!summary)
           return
-        let _summary = await summarize("The patient said that his head hurt and his knee is clearly messed up. " +
-          "First we need to do surgery on that knee and we need to make a resonance for the head")
+        let _summary = await summarize(summary)
 
         _summary = _summary?.choices[0]?.message?.content
 

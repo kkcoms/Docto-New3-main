@@ -169,10 +169,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
               src={audioFileUrl}
               preload="metadata"
               onLoadedMetaData={(data : any) => {
-                if (data?.srcElement?.duration && !duration) {
-                  setDuration(data?.srcElement?.duration)
+                  if (data?.srcElement?.duration && !duration) {
+                    setDuration(data?.srcElement?.duration)
+                  }
                 }
-              }
               }
               onListen={(e: any) => setAudioCurrentTime(parseFloat(e.srcElement.currentTime))}
             // other props here
