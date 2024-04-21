@@ -84,6 +84,8 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       return
     }
 
+    clearFinalTranscriptions()
+
     document?.audioFileUrl ? setAudioFileUrl(document.audioFileUrl) : setAudioFileUrl("")
 
     document.summarizationResult ? setSummarizationResult(document.summarizationResult) : setSummarizationResult("");
@@ -92,13 +94,11 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
 
     if (document.content){
       const content = JSON.parse(document.content);
-      if (content && !isTranscribed) {
-        content?.map(function(transcription: any, index: any) {
-          addFinalTranscription(transcription);
-          setIsTranscribed(true);
-        })
-      }
-    } else clearFinalTranscriptions()
+      content?.map(function(transcription: any, index: any) {
+        addFinalTranscription(transcription);
+        setIsTranscribed(true);
+      })
+    }
 
   }, [document]);
 
