@@ -115,7 +115,7 @@ return (
         onClick={enableInput}
         className="flex flex-col md:flex-row md:items-center gap-x-[32px] gap-y-2 pb-[11.5px] text-3xl md:text-5xl font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF]"
       >
-        {initialData.title && <div className="mb-1">{initialData.title}</div>}
+        {value && <div className="mb-1">{value}</div>}
         {noteCreationDateTime && (
           <div className="flex flex-row items-center text-xs md:text-sm text-gray-500 dark:text-[#CFCFCF]">
             <Calendar className="h-4 w-4 mr-2" />
