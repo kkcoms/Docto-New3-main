@@ -24,6 +24,10 @@ export const Toolbar = ({ initialData, preview, duration }: ToolbarProps) => {
   const update = useMutation(api.documents.update);
   const removeIcon = useMutation(api.documents.removeIcon);
 
+  useEffect(() => {
+    setValue(initialData.title)
+  }, [initialData])
+
   function secondsToTime(seconds : number | undefined) : string {
     if (!seconds) return ``;
     let minutes = Math.floor(seconds / 60);

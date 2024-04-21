@@ -1,5 +1,5 @@
 //TranscriptionContext.tsx
-import { Transcription } from "@/app/types";
+import {ActionPoint, Transcription} from "@/app/types";
 import React, { createContext, useState, ReactNode } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -13,6 +13,8 @@ interface TranscriptionContextType {
   setFinalTranscription: (transcription: Transcription | null) => void;
   summarizationResult: string; // Added summarizationResult property
   setSummarizationResult: (result: string) => void; // Added setSummarizationResult method
+  actionPoints: ActionPoint[]
+  setActionPoints: (value: ActionPoint[]) => void
   summaryNote: string;
   setSummaryNote: (note: string) => void;
   generateNewSessionId: () => void;
@@ -54,7 +56,9 @@ const defaultState: TranscriptionContextType = {
   isDisabledRecordButton: false,
   setisDisabledRecordButton: () => { },
   transcriptionCompleted: false,
-  setTranscriptionCompleted: () => {}
+  setTranscriptionCompleted: () => {},
+  actionPoints: [],
+  setActionPoints: (value) => {}
 };
 
 const TranscriptionContext =
@@ -80,6 +84,7 @@ export const TranscriptionProvider = ({
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [isDisabledRecordButton, setisDisabledRecordButton] = useState(false);
   const [transcriptionCompleted, setTranscriptionCompleted] = useState(false)
+  const [actionPoints, setActionPoints] = useState<ActionPoint[]>([])
 
   const generateNewSessionId = () => {
     const newSessionId = uuidv4();
@@ -120,7 +125,9 @@ export const TranscriptionProvider = ({
     setisDisabledRecordButton,
     isDisabledRecordButton,
     transcriptionCompleted,
-    setTranscriptionCompleted
+    setTranscriptionCompleted,
+    actionPoints,
+    setActionPoints
   };
 
   return (

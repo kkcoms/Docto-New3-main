@@ -16,6 +16,7 @@ import { MediaRecorder, register } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
 import useSummarize from "@/hooks/use-summarize";
 import useStringToPlate from "@/hooks/use-string-to-plate";
+import { ActionPoint } from "@/app/types";
 
 const model = {
   model: "nova-2-medical",
@@ -50,6 +51,7 @@ export const useRecordVoice = (
   const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
   const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio);
   const updateDocument = useMutation(api.documents.update);
+  const getActionsPoints = useAction(api.openAI.getActionsPoints)
   const summarize = useSummarize()
   const stringToPlate = useStringToPlate()
   const {
@@ -63,6 +65,7 @@ export const useRecordVoice = (
     setAudioFileUrl,
     setSummarizationResult,
     setSummaryNote,
+    setActionPoints
   } = useContext(TranscriptionContext);
 
   const sendSummaryForBlocknote = async (summary: string) => {
@@ -273,7 +276,6 @@ export const useRecordVoice = (
           return
 
         setAudioFileUrl(uploadResult.fileUrl);
-        debugger
         const transcribeResponse = await fetch("/api/deepgram/", {
           method: "POST",
           headers: {
@@ -308,6 +310,22 @@ export const useRecordVoice = (
 
         _summary = JSON.stringify(_summary)
 
+        let actionsPoints = await getActionsPoints({
+          text: summary
+        })
+
+        actionsPoints = actionsPoints?.choices[0]?.message?.content
+
+        let points = JSON.parse(actionsPoints) as { content: string}[]
+
+        points = points.map((el, index) => ({...el, checked: false, id: index.toString()}))
+
+        setActionPoints(points as ActionPoint[])
+
+        actionsPoints = JSON.stringify(points)
+
+        console.log(">>>> action points", actionsPoints)
+
         setSummarizationResult(_summary);
         setSummaryNote(_summary);
 
@@ -316,7 +334,9 @@ export const useRecordVoice = (
           content: JSON.stringify(utterances),
           summarizationResult: _summary,
           summaryNote: _summary,
+          actionPoints: actionsPoints
         });
+
         setIsTranscribed(true);
         setisDisabledRecordButton(false);
 

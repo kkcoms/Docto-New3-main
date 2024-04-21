@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { PlateEditor } from "@/app/(main)/_components/summary-editor";
 import {IGeneralContext, GeneralContext} from "@/context/context";
 import {PlateController} from "@udecode/plate";
+import {ActionPoint} from "@/app/types";
 
 interface DocumentIdPageProps {
   params: {
@@ -46,7 +47,8 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     clearFinalTranscriptions,
     setLiveTranscription,
     setSummarizationResult,
-    setSummaryNote
+    setSummaryNote,
+    setActionPoints
   } = useContext(TranscriptionContext);
 
 
@@ -85,6 +87,12 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     }
 
     clearFinalTranscriptions()
+
+    if (document?.actionPoints) {
+      let points = JSON.parse(document.actionPoints) as ActionPoint[]
+      console.log(points)
+      setActionPoints(points)
+    } else setActionPoints([])
 
     document?.audioFileUrl ? setAudioFileUrl(document.audioFileUrl) : setAudioFileUrl("")
 

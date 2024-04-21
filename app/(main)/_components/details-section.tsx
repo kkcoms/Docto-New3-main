@@ -25,10 +25,16 @@ const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectio
     []
   );
 
+  const {
+    actionPoints,
+    setActionPoints
+  } = useContext(TranscriptionContext);
+
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
+  const updateDocument = useMutation(api.documents.update);
 
   const collapse = () => {
     if (sidebarRef.current) {
@@ -63,6 +69,27 @@ const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectio
       collapse();
     }
   }, [pathname, isMobile]);
+
+  const handleActionClick = async (id: string, value: boolean) => {
+    let temp = [...actionPoints]
+
+    temp = temp.map(el => {
+      if (el.id === id) {
+        return {
+          ...el,
+          checked: value
+        }
+      }
+      return el
+    })
+
+    setActionPoints(temp)
+
+    await updateDocument({
+      id: documentId,
+      actionPoints: JSON.stringify(temp)
+    });
+  }
 
   return (
     <>
@@ -110,26 +137,12 @@ const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectio
 
             <Tabs.Content className="TabsContent" value="actions">
               <div className="flex flex-col gap-3 p-3">
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
-                <Checkbox />
+                {actionPoints.map(el => <Checkbox
+                  text={el.content}
+                  checked={el.checked}
+                  id={el.id}
+                  onClick={handleActionClick}
+                />)}
               </div>
             </Tabs.Content>
           </div>

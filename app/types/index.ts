@@ -29,3 +29,11 @@ export interface Transcription {
   end: number;
   timestamp: string;
 }
+
+export interface ActionPoint {
+  content: string
+
+  checked: boolean
+
+  id: string
+}
